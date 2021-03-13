@@ -1,0 +1,107 @@
+:root {
+    --scrollbar-thumb-color: #FFFFFF;
+    --scrollbar-track-color: rgba(147,144,250,1);
+    --root-bg: radial-gradient(#404F7F, #334069);
+    --root-fg: #FFFFFF;
+    --logs-bg: linear-gradient(175deg, rgba(147,144,250,1) 0%, rgba(80,73,162,1) 100%);;
+    --accent-color: radial-gradient(#2D375C, #242D4D);
+    --temp-color-352: #4060AA;
+    --temp-color-354: #3E73B7;
+    --temp-color-356: #419FD6;
+    --temp-color-358: #4DC7F2;
+    --temp-color-360: #6BD1DE;
+    --temp-color-362: #6EC17E;
+    --temp-color-364: #6AC048;
+    --temp-color-366: #71C041;
+    --temp-color-367: #81C53F;
+    --temp-color-368: #96C842;
+    --temp-color-369: #A6CB3B;
+    --temp-color-370: #C1D830;
+    --temp-color-372: #D5E12E;
+    --temp-color-374: #EFEA1D;
+    --temp-color-376: #FBE202;
+    --temp-color-378: #F27A24;
+    --temp-color-380: #F15728;
+}
+
+*::-webkit-scrollbar {
+    height: 12px;
+    width: 12px;
+}
+*::-webkit-scrollbar-track {
+    background: var(--scrollbar-track-color);
+    border-radius: 10px;
+}
+*::-webkit-scrollbar-thumb {
+    width: 8px;
+    background-color: var(--scrollbar-thumb-color);
+    border-radius: 10px;
+    border: 3px solid var(--scrollbar-track-color);
+}
+
+header {
+    background: var(--accent-color);
+    box-shadow: 0 0 40px rgb(0 0 0 / 20%);
+}
+
+body {
+    color: var(--root-fg);
+    background: var(--root-bg);
+}
+
+.scrollable {
+    display: block;
+    overflow: auto;
+}
+
+.btn-outline {
+    color: var(--logs-bg);
+    border-color: var(--logs-bg);
+}
+
+.btn-outline:hover {
+    color: var(--root-fg);
+}
+
+thead, tbody tr {
+    color: var(--root-fg);
+    display: table;
+    width: 100%;
+    table-layout: fixed;
+}
+
+.table-hover>tbody>tr:hover {
+    color: var(--scrollbar-track-color);
+}
+
+#logs-list {
+    background: var(--logs-bg);
+    box-shadow: 0 0 40px rgb(0 0 0 / 20%);
+}
+
+.row .col-sm {
+    border: 1px solid;
+    border-style: none solid none;
+}
+
+input[type="date"] {
+    border-radius: 10px;
+    padding-left: 10px;
+    padding-right: 5px;
+}
+
+input[type="date"]:focus {
+    outline: none
+}
+
+.button {
+    transition: all 0.2s ease-out 0s;
+    color: var(--root-fg);
+    background: var(--logs-bg);
+}
+
+.button:hover {
+    color: var(--root-fg);
+    border-radius: 5px;
+    box-shadow: 0 0 40px rgb(0 0 0 / 20%)
+}
