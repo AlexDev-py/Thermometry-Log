@@ -12,18 +12,26 @@ class JSApi:
     """
 
     def delete_log(self, log_id: int):
-        """ Удаляем запись под номером `log_id` """
+        """
+        Удаляем запись под номером `log_id`.
+        :param log_id: ID записи, которую нужно удалить.
+        """
 
         sql = self.sql
         sql.execute(f'DELETE FROM thermometrylog WHERE id=?', log_id)
         sql.commit()
 
-    def edit_log(self, log_id: int, name: str, temp: float):
-        """ Изменяем запись под номером `log_id` """
+    def edit_log(self, log_id: int, name: str, temperature: float):
+        """
+        Изменяем запись под номером `log_id`.
+        :param log_id: ID записи, которую нужно изменить.
+        :param name: Новое значение для поля `name`.
+        :param temperature: Новое значение для поля `temperature`.
+        """
 
         self.thermometry_logs.filter(id=log_id).update(
             name=name,
-            temperature=Float(temp)
+            temperature=Float(temperature)
         )
 
     def get_logs(self, date: str = None) -> json.dumps:
@@ -58,6 +66,20 @@ class JSApi:
             min_temp=min_temp,
             max_temp=max_temp
         ))
+
+    def add_log(self, name: str, temperature: float, date: str):
+        """
+        Создаем новую запись.
+        :param name: ФИО человека.
+        :param temperature: Температура.
+        :param date: Дата в формате `%Y-%m-%d`.
+        """
+
+        self.thermometry_logs.insert(
+            name=name,
+            temperature=Float(temperature),
+            date=datetime.strptime(date, '%Y-%m-%d').strftime('%d.%m.%Y')
+        )
 
     @property
     def sql(self):

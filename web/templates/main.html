@@ -20,7 +20,7 @@
             });
         </script>
     </form>
-    <button class="btn button btn-sm" type="button" style="margin-left: 1rem; margin-bottom: 1rem;">
+    <button class="btn button btn-sm" type="button" style="margin-left: 1rem; margin-bottom: 1rem;" data-bs-toggle="modal" data-bs-target="#addLogModal">
         <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-plus-circle-fill mr-2" viewBox="0 0 16 16">
             <path d="M16 8A8 8 0 1 1 0 8a8 8 0 0 1 16 0zM8.5 4.5a.5.5 0 0 0-1 0v3h-3a.5.5 0 0 0 0 1h3v3a.5.5 0 0 0 1 0v-3h3a.5.5 0 0 0 0-1h-3v-3z"/>
         </svg><label class="mx-2">Добавить</label>
@@ -31,11 +31,127 @@
 {% block body %}
 <div class="row" style="--bs-gutter-x: 0">
     <div class="col-8 px-3" id="main">
-         <div class="d-flex justify-content-center" style="margin: 40% 25% 25% 25%;">
-            <div class="spinner-border" role="status">
-                <span class="visually-hidden">Loading...</span>
+        {% if logs|length > 0 %}
+        <table class="table table-hover" style="height: {{ window[1] * 0.65 }}px">
+            <thead>
+                <tr>
+                    <th scope="col"><strong>Дата измерения</strong></th>
+                    <th scope="col"><strong>ФИО человека</strong></th>
+                    <th scope="col"><strong>Температура</strong></th>
+                </tr>
+            </thead>
+            <tbody class="scrollable" style="height: {{ window[1] * 0.65 }}px">
+                {% for log in logs %}
+                <tr>
+                    <td>
+                        <div class="btn-group">
+                            <button type="button" class="btn btn-sm btn-outline" data-log-id="{{log.id}}" data-bs-toggle="modal" data-bs-target="#deleteLogModal">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-trash2-fill" viewBox="0 0 16 16">
+                                    <path d="M2.037 3.225A.703.703 0 0 1 2 3c0-1.105 2.686-2 6-2s6 .895 6 2a.702.702 0 0 1-.037.225l-1.684 10.104A2 2 0 0 1 10.305 15H5.694a2 2 0 0 1-1.973-1.671L2.037 3.225zm9.89-.69C10.966 2.214 9.578 2 8 2c-1.58 0-2.968.215-3.926.534-.477.16-.795.327-.975.466.18.14.498.307.975.466C5.032 3.786 6.42 4 8 4s2.967-.215 3.926-.534c.477-.16.795-.327.975-.466-.18-.14-.498-.307-.975-.466z"/>
+                                </svg>
+                            </button>
+                            <button type="button" class="btn btn-sm btn-outline" data-name="{{log.name}}" data-temp="{{log.temperature}}" data-log-id="{{log.id}}" data-bs-toggle="modal" data-bs-target="#editLogModal">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-pencil-fill" viewBox="0 0 16 16">
+                                    <path d="M12.854.146a.5.5 0 0 0-.707 0L10.5 1.793 14.207 5.5l1.647-1.646a.5.5 0 0 0 0-.708l-3-3zm.646 6.061L9.793 2.5 3.293 9H3.5a.5.5 0 0 1 .5.5v.5h.5a.5.5 0 0 1 .5.5v.5h.5a.5.5 0 0 1 .5.5v.5h.5a.5.5 0 0 1 .5.5v.207l6.5-6.5zm-7.468 7.468A.5.5 0 0 1 6 13.5V13h-.5a.5.5 0 0 1-.5-.5V12h-.5a.5.5 0 0 1-.5-.5V11h-.5a.5.5 0 0 1-.5-.5V10h-.5a.499.499 0 0 1-.175-.032l-.179.178a.5.5 0 0 0-.11.168l-2 5a.5.5 0 0 0 .65.65l5-2a.5.5 0 0 0 .168-.11l.178-.178z"/>
+                                </svg>
+                            </button>
+                        </div>
+                        {{log.date}}
+                    </td>
+                    <td>{{log.name}}</td>
+                    <td>
+                        {% if log.temperature <= 36 %}
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-thermometer-low" viewBox="0 0 16 16">
+                            <path d="M9.5 12.5a1.5 1.5 0 1 1-2-1.415V9.5a.5.5 0 0 1 1 0v1.585a1.5 1.5 0 0 1 1 1.415z"/>
+                            <path d="M5.5 2.5a2.5 2.5 0 0 1 5 0v7.55a3.5 3.5 0 1 1-5 0V2.5zM8 1a1.5 1.5 0 0 0-1.5 1.5v7.987l-.167.15a2.5 2.5 0 1 0 3.333 0l-.166-.15V2.5A1.5 1.5 0 0 0 8 1z"/>
+                        </svg>
+                        {% elif log.temperature <= 37 %}
+                        <svg id="temp-icon${log[0]}" xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-thermometer-half" viewBox="0 0 16 16">
+                            <path d="M9.5 12.5a1.5 1.5 0 1 1-2-1.415V6.5a.5.5 0 0 1 1 0v4.585a1.5 1.5 0 0 1 1 1.415z"/>
+                            <path d="M5.5 2.5a2.5 2.5 0 0 1 5 0v7.55a3.5 3.5 0 1 1-5 0V2.5zM8 1a1.5 1.5 0 0 0-1.5 1.5v7.987l-.167.15a2.5 2.5 0 1 0 3.333 0l-.166-.15V2.5A1.5 1.5 0 0 0 8 1z"/>
+                        </svg>
+                        {% else %}
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-thermometer-high" viewBox="0 0 16 16">
+                            <path d="M9.5 12.5a1.5 1.5 0 1 1-2-1.415V2.5a.5.5 0 0 1 1 0v8.585a1.5 1.5 0 0 1 1 1.415z"/>
+                            <path d="M5.5 2.5a2.5 2.5 0 0 1 5 0v7.55a3.5 3.5 0 1 1-5 0V2.5zM8 1a1.5 1.5 0 0 0-1.5 1.5v7.987l-.167.15a2.5 2.5 0 1 0 3.333 0l-.166-.15V2.5A1.5 1.5 0 0 0 8 1z"/>
+                        </svg>
+                        {% endif %}
+                        {{log.temperature}}
+                        <div class="progress" style="height: 5px">
+                            <div class="progress-bar" role="progressbar"
+                                 style="width: {{(log.temperature - 30) * 10}}%;background-color:
+                                 {% if log.temperature|float() <= 35.2 %} var(--temp-color-352)
+                                 {% elif log.temperature|float() >= 38.0 %} var(--temp-color-380)
+                                 {% else %} var(--temp-color-{{log.temperature|int()}}{{(log.temperature % 1 * 10)|round()|int()}}, var(--temp-color-{{(log.temperature + 0.1)|int()}}{{((log.temperature + 0.1) % 1 * 10)|round()|int()}}))
+                                 {% endif %}"
+                                 aria-valuenow="{{(log.temperature - 30) * 10}}" aria-valuemin="32" aria-valuemax="40">
+                            </div>
+                        </div>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        <hr>
+        <div class="row text-center">
+            <div class="col-sm">
+                Всего записей
+                <h1>
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-journals" viewBox="0 0 16 16">
+                        <path d="M5 0h8a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2 2 2 0 0 1-2 2H3a2 2 0 0 1-2-2h1a1 1 0 0 0 1 1h8a1 1 0 0 0 1-1V4a1 1 0 0 0-1-1H3a1 1 0 0 0-1 1H1a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v9a1 1 0 0 0 1-1V2a1 1 0 0 0-1-1H5a1 1 0 0 0-1 1H3a2 2 0 0 1 2-2z"/>
+                        <path d="M1 6v-.5a.5.5 0 0 1 1 0V6h.5a.5.5 0 0 1 0 1h-2a.5.5 0 0 1 0-1H1zm0 3v-.5a.5.5 0 0 1 1 0V9h.5a.5.5 0 0 1 0 1h-2a.5.5 0 0 1 0-1H1zm0 2.5v.5H.5a.5.5 0 0 0 0 1h2a.5.5 0 0 0 0-1H2v-.5a.5.5 0 0 0-1 0z"/>
+                    </svg>
+                    {{logs|length}}
+                </h1>
+            </div>
+            <div class="col-sm">
+                Средняя температура
+                <h1>
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-thermometer-half" viewBox="0 0 16 16">
+                        <path d="M9.5 12.5a1.5 1.5 0 1 1-2-1.415V6.5a.5.5 0 0 1 1 0v4.585a1.5 1.5 0 0 1 1 1.415z"/>
+                        <path d="M5.5 2.5a2.5 2.5 0 0 1 5 0v7.55a3.5 3.5 0 1 1-5 0V2.5zM8 1a1.5 1.5 0 0 0-1.5 1.5v7.987l-.167.15a2.5 2.5 0 1 0 3.333 0l-.166-.15V2.5A1.5 1.5 0 0 0 8 1z"/>
+                    </svg>
+                    {{average_temp}}
+                </h1>
+            </div>
+            <div class="col-sm">
+                Максимальная температура
+                <h1>
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-thermometer-high" viewBox="0 0 16 16">
+                        <path d="M9.5 12.5a1.5 1.5 0 1 1-2-1.415V2.5a.5.5 0 0 1 1 0v8.585a1.5 1.5 0 0 1 1 1.415z"/>
+                        <path d="M5.5 2.5a2.5 2.5 0 0 1 5 0v7.55a3.5 3.5 0 1 1-5 0V2.5zM8 1a1.5 1.5 0 0 0-1.5 1.5v7.987l-.167.15a2.5 2.5 0 1 0 3.333 0l-.166-.15V2.5A1.5 1.5 0 0 0 8 1z"/>
+                    </svg>
+                    {{max_temp}}
+                </h1>
+            </div>
+            <div class="col-sm">
+                Минимальная температура
+                <h1>
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-thermometer-high" viewBox="0 0 16 16">
+                        <path d="M9.5 12.5a1.5 1.5 0 1 1-2-1.415V9.5a.5.5 0 0 1 1 0v1.585a1.5 1.5 0 0 1 1 1.415z"/>
+                        <path d="M5.5 2.5a2.5 2.5 0 0 1 5 0v7.55a3.5 3.5 0 1 1-5 0V2.5zM8 1a1.5 1.5 0 0 0-1.5 1.5v7.987l-.167.15a2.5 2.5 0 1 0 3.333 0l-.166-.15V2.5A1.5 1.5 0 0 0 8 1z"/>
+                    </svg>
+                    {{min_temp}}
+                </h1>
             </div>
         </div>
+        {% else %}
+        <div class="container text-center ">
+            <h1 class="mt-5">
+                Нет записей на это число
+                <svg xmlns="http://www.w3.org/2000/svg" width="35" height="35" fill="currentColor" class="bi bi-journal" viewBox="0 0 16 16">
+                    <path d="M3 0h10a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2v-1h1v1a1 1 0 0 0 1 1h10a1 1 0 0 0 1-1V2a1 1 0 0 0-1-1H3a1 1 0 0 0-1 1v1H1V2a2 2 0 0 1 2-2z"/>
+                    <path d="M1 5v-.5a.5.5 0 0 1 1 0V5h.5a.5.5 0 0 1 0 1h-2a.5.5 0 0 1 0-1H1zm0 3v-.5a.5.5 0 0 1 1 0V8h.5a.5.5 0 0 1 0 1h-2a.5.5 0 0 1 0-1H1zm0 3v-.5a.5.5 0 0 1 1 0v.5h.5a.5.5 0 0 1 0 1h-2a.5.5 0 0 1 0-1H1z"/>
+                </svg>
+            </h1>
+            <div class="d-grid gap-2 col-6 mx-auto">
+                {% if date != now_date %}
+                <button type="button" class="btn button" onclick="pywebview.api.open_url('')">Перейти к сегодняшнему числу</button>
+                {% endif %}
+                <button class="btn button" type="button" data-bs-toggle="modal" data-bs-target="#addLogModal">Добавить запись</button>
+            </div>
+        </div>
+        {% endif %}
     </div>
     <div id="logs-list" class="col-4" style="height: {{ window[1] * 0.92 }}px;">
         p
@@ -49,14 +165,16 @@
                 <h5 class="modal-title" id="deleteLogModalLabel">Удалить запись?</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
-            <div class="modal-body">
+            <div class="modal-body" id="deleteModalBody">
                 Запись будет не возможно восстановить.
             </div>
             <div class="modal-footer">
-                <button type="button" class="btn btn-success" data-bs-dismiss="modal">Отмена</button>
-                <button type="button" class="btn btn-danger" data-bs-dismiss="modal"
-                        id="deleteLogModalBtn" data-log-id="">Удалить
-                </button>
+                <form id="deleteForm" data-log-id="" method="get">
+                    <input type="hidden" name="date" value="{{date}}"/>
+                    <button type="button" class="btn btn-success" data-bs-dismiss="modal">Отмена</button>
+                    <button type="submit" class="btn btn-danger" id="deleteLogModalBtn">Удалить
+                    </button>
+                </form>
             </div>
         </div>
     </div>
@@ -68,230 +186,122 @@
                 <h5 class="modal-title" id="editLogModalLabel">Редактирование записи</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
-            <div class="modal-body">
-                <form>
+            <form id="editForm" data-log-id="" onsubmit="" method="get">
+                <input type="hidden" name="date" value="{{date}}"/>
+                <div class="modal-body" id="editModalBody">
                     <div class="mb-3">
                         <label for="nameInput" class="form-label">ФИО человека</label>
-                        <input type="email" class="form-control" id="nameInput">
+                        <input type="text" class="form-control" id="nameInput" required>
                     </div>
                     <div class="mb-3">
                         <label for="tempInput" class="form-label">Температура</label>
-                        <input type="number" class="form-control" id="tempInput">
+                        <input type="number" class="form-control" id="tempInput" step="0.1" required>
                     </div>
-                </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Отмена</button>
+                    <button type="submit" class="btn btn-success" id="editLogModalBtn">Сохранить
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+<div class="modal fade" id="addLogModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content" style="background: var(--root-bg)">
+            <div class="modal-header">
+                <h5 class="modal-title" id="addLogModalLabel">Создание новой записи</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Отмена</button>
-                <button type="button" class="btn btn-success" data-bs-dismiss="modal"
-                        id="editLogModalBtn" data-log-id="">Сохранить
-                </button>
-            </div>
+            <form id="addForm" method="get">
+                <input type="hidden" name="date" value="{{date}}"/>
+                <div class="modal-body" id="addModalBody">
+                    <div class="mb-3">
+                        <label for="nameInput" class="form-label">ФИО человека</label>
+                        <input type="text" class="form-control" id="newNameInput" required>
+                        <div class="invalid-feedback">
+                            Пожалуйста, заполните это поле.
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <label for="tempInput" class="form-label">Температура</label>
+                        <input type="number" class="form-control" id="newTempInput" value="36.6" step="0.1" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="tempInput" class="form-label">Дата</label>
+                        <input type="date" class="form-control" id="newDateInput" value="{{date}}" required>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Отмена</button>
+                    <button type="submit" class="btn btn-success" id="addLogModalBtn">Добавить</button>
+                </div>
+            </form>
         </div>
     </div>
 </div>
 <script type="text/javascript">
-    function get_logs() {
-        pywebview.api.get_logs('{{date}}').then(function(response) {
-            let data = JSON.parse(response)
-            let main = document.getElementById('main');
-            main.innerHTML = '';
-            if (data.logs.length == 0) {
-                var html = `
-                <div class="container text-center ">
-                    <h1 class="mt-5">
-                        Нет записей на это число
-                        <svg xmlns="http://www.w3.org/2000/svg" width="35" height="35" fill="currentColor" class="bi bi-journal" viewBox="0 0 16 16">
-                            <path d="M3 0h10a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2v-1h1v1a1 1 0 0 0 1 1h10a1 1 0 0 0 1-1V2a1 1 0 0 0-1-1H3a1 1 0 0 0-1 1v1H1V2a2 2 0 0 1 2-2z"/>
-                            <path d="M1 5v-.5a.5.5 0 0 1 1 0V5h.5a.5.5 0 0 1 0 1h-2a.5.5 0 0 1 0-1H1zm0 3v-.5a.5.5 0 0 1 1 0V8h.5a.5.5 0 0 1 0 1h-2a.5.5 0 0 1 0-1H1zm0 3v-.5a.5.5 0 0 1 1 0v.5h.5a.5.5 0 0 1 0 1h-2a.5.5 0 0 1 0-1H1z"/>
-                        </svg>
-                    </h1>
-                    <div class="d-grid gap-2 col-6 mx-auto">
-                        <button type="button" class="btn button" onclick="pywebview.api.open_url('')">Перейти к сегодняшнему числу</button>
-                        <button class="btn button" type="button">Добавить запись</button>
-                    </div>
-                </div>
-                `;
-                main.innerHTML += html;
-            };
-            if (data.logs.length > 0) {
-                var html = `
-                <table class="table table-hover" style="height: {{ window[1] * 0.65 }}px">
-                    <thead>
-                        <tr>
-                            <th scope="col"><strong>Дата измерения</strong></th>
-                            <th scope="col"><strong>ФИО человека</strong></th>
-                            <th scope="col"><strong>Температура</strong></th>
-                        </tr>
-                    </thead>
-                    <tbody class="scrollable" style="height: {{ window[1] * 0.65 }}px" id="tbody">
-                    </tbody>
-                </table>
-                <hr>
-                <div class="row text-center">
-                    <div class="col-sm">
-                        Всего записей
-                        <h1>
-                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-journals" viewBox="0 0 16 16">
-                                <path d="M5 0h8a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2 2 2 0 0 1-2 2H3a2 2 0 0 1-2-2h1a1 1 0 0 0 1 1h8a1 1 0 0 0 1-1V4a1 1 0 0 0-1-1H3a1 1 0 0 0-1 1H1a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v9a1 1 0 0 0 1-1V2a1 1 0 0 0-1-1H5a1 1 0 0 0-1 1H3a2 2 0 0 1 2-2z"/>
-                                <path d="M1 6v-.5a.5.5 0 0 1 1 0V6h.5a.5.5 0 0 1 0 1h-2a.5.5 0 0 1 0-1H1zm0 3v-.5a.5.5 0 0 1 1 0V9h.5a.5.5 0 0 1 0 1h-2a.5.5 0 0 1 0-1H1zm0 2.5v.5H.5a.5.5 0 0 0 0 1h2a.5.5 0 0 0 0-1H2v-.5a.5.5 0 0 0-1 0z"/>
-                            </svg>
-                            ${data.logs.length}
-                        </h1>
-                    </div>
-                    <div class="col-sm">
-                        Средняя температура
-                        <h1>
-                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-thermometer-half" viewBox="0 0 16 16">
-                                <path d="M9.5 12.5a1.5 1.5 0 1 1-2-1.415V6.5a.5.5 0 0 1 1 0v4.585a1.5 1.5 0 0 1 1 1.415z"/>
-                                <path d="M5.5 2.5a2.5 2.5 0 0 1 5 0v7.55a3.5 3.5 0 1 1-5 0V2.5zM8 1a1.5 1.5 0 0 0-1.5 1.5v7.987l-.167.15a2.5 2.5 0 1 0 3.333 0l-.166-.15V2.5A1.5 1.5 0 0 0 8 1z"/>
-                            </svg>
-                            ${data.average_temp}
-                        </h1>
-                    </div>
-                    <div class="col-sm">
-                        Максимальная температура
-                        <h1>
-                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-thermometer-high" viewBox="0 0 16 16">
-                                <path d="M9.5 12.5a1.5 1.5 0 1 1-2-1.415V2.5a.5.5 0 0 1 1 0v8.585a1.5 1.5 0 0 1 1 1.415z"/>
-                                <path d="M5.5 2.5a2.5 2.5 0 0 1 5 0v7.55a3.5 3.5 0 1 1-5 0V2.5zM8 1a1.5 1.5 0 0 0-1.5 1.5v7.987l-.167.15a2.5 2.5 0 1 0 3.333 0l-.166-.15V2.5A1.5 1.5 0 0 0 8 1z"/>
-                            </svg>
-                            ${data.max_temp}
-                        </h1>
-                    </div>
-                    <div class="col-sm">
-                        Минимальная температура
-                        <h1>
-                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-thermometer-high" viewBox="0 0 16 16">
-                                <path d="M9.5 12.5a1.5 1.5 0 1 1-2-1.415V9.5a.5.5 0 0 1 1 0v1.585a1.5 1.5 0 0 1 1 1.415z"/>
-                                <path d="M5.5 2.5a2.5 2.5 0 0 1 5 0v7.55a3.5 3.5 0 1 1-5 0V2.5zM8 1a1.5 1.5 0 0 0-1.5 1.5v7.987l-.167.15a2.5 2.5 0 1 0 3.333 0l-.166-.15V2.5A1.5 1.5 0 0 0 8 1z"/>
-                            </svg>
-                            ${data.min_temp}
-                        </h1>
-                    </div>
-                </div>
-                `;
-                main.innerHTML += html;
-                let tbody = document.getElementById('tbody');
-                for (var log of data.logs) {
-                    var tr = document.createElement('tr');
-                    tr.id = "log-${log[0]}";
-
-                    var html = `
-                    <td>
-                        <div class="btn-group">
-                            <button type="button" class="btn btn-sm btn-outline" data-log-id="${log[0]}" data-bs-toggle="modal" data-bs-target="#deleteLogModal">
-                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-trash2-fill" viewBox="0 0 16 16">
-                                    <path d="M2.037 3.225A.703.703 0 0 1 2 3c0-1.105 2.686-2 6-2s6 .895 6 2a.702.702 0 0 1-.037.225l-1.684 10.104A2 2 0 0 1 10.305 15H5.694a2 2 0 0 1-1.973-1.671L2.037 3.225zm9.89-.69C10.966 2.214 9.578 2 8 2c-1.58 0-2.968.215-3.926.534-.477.16-.795.327-.975.466.18.14.498.307.975.466C5.032 3.786 6.42 4 8 4s2.967-.215 3.926-.534c.477-.16.795-.327.975-.466-.18-.14-.498-.307-.975-.466z"/>
-                                </svg>
-                            </button>
-                            <button type="button" class="btn btn-sm btn-outline" data-name="${log[1]}" data-temp="${log[2]}" data-log-id="${log[0]}" data-bs-toggle="modal" data-bs-target="#editLogModal">
-                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-pencil-fill" viewBox="0 0 16 16">
-                                    <path d="M12.854.146a.5.5 0 0 0-.707 0L10.5 1.793 14.207 5.5l1.647-1.646a.5.5 0 0 0 0-.708l-3-3zm.646 6.061L9.793 2.5 3.293 9H3.5a.5.5 0 0 1 .5.5v.5h.5a.5.5 0 0 1 .5.5v.5h.5a.5.5 0 0 1 .5.5v.5h.5a.5.5 0 0 1 .5.5v.207l6.5-6.5zm-7.468 7.468A.5.5 0 0 1 6 13.5V13h-.5a.5.5 0 0 1-.5-.5V12h-.5a.5.5 0 0 1-.5-.5V11h-.5a.5.5 0 0 1-.5-.5V10h-.5a.499.499 0 0 1-.175-.032l-.179.178a.5.5 0 0 0-.11.168l-2 5a.5.5 0 0 0 .65.65l5-2a.5.5 0 0 0 .168-.11l.178-.178z"/>
-                                </svg>
-                            </button>
-                        </div>
-                        ${log[3]}
-                    </td>
-                    <td>${log[1]}</td>
-                    <td>
-                        <svg id="temp-icon${log[0]}" xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-thermometer-half" viewBox="0 0 16 16">
-                            <path d="M9.5 12.5a1.5 1.5 0 1 1-2-1.415V6.5a.5.5 0 0 1 1 0v4.585a1.5 1.5 0 0 1 1 1.415z"/>
-                            <path d="M5.5 2.5a2.5 2.5 0 0 1 5 0v7.55a3.5 3.5 0 1 1-5 0V2.5zM8 1a1.5 1.5 0 0 0-1.5 1.5v7.987l-.167.15a2.5 2.5 0 1 0 3.333 0l-.166-.15V2.5A1.5 1.5 0 0 0 8 1z"/>
-                        </svg>
-                        ${log[2]}
-                        <div class="progress" style="height: 5px">
-                            <div id="pb${log[0]}" class="progress-bar" role="progressbar" style="width: ${(log[2] - 30) * 10}%;"
-                                 aria-valuenow="${(log[2] - 30) * 10}" aria-valuemin="32" aria-valuemax="40">
-                            </div>
-                        </div>
-                    </td>
-                    `;
-
-                    tr.innerHTML += html;
-                    tbody.appendChild(tr);
-
-                    var pb = document.getElementById('pb' + log[0]);
-                    if (log[2] <= 35.2) {pb.style.backgroundColor = "var(--temp-color-352)"}
-                    else if (log[2] >= 38.0) {pb.style.backgroundColor = "var(--temp-color-380)"}
-                    else {
-                        pb.style.backgroundColor = "var(--temp-color-"+Math.trunc(log[2])+""+Math.floor(log[2] % 1 * 10)+"," + "var(--temp-color-"+Math.trunc(log[2])+""+Math.trunc((log[2] + 0.1) % 1 * 10)+"))"
-                    };
-
-                    var icon = document.getElementById('temp-icon' + log[0]);
-                    if (log[2] <= 36) {
-                        var html = `
-                        <path d="M9.5 12.5a1.5 1.5 0 1 1-2-1.415V9.5a.5.5 0 0 1 1 0v1.585a1.5 1.5 0 0 1 1 1.415z"/>
-                        <path d="M5.5 2.5a2.5 2.5 0 0 1 5 0v7.55a3.5 3.5 0 1 1-5 0V2.5zM8 1a1.5 1.5 0 0 0-1.5 1.5v7.987l-.167.15a2.5 2.5 0 1 0 3.333 0l-.166-.15V2.5A1.5 1.5 0 0 0 8 1z"/>
-                        `;
-                        icon.classList.remove('bi-thermometer-half');
-                        icon.classList.add('bi-thermometer-low');
-                    } else if (log[2] <= 37) {
-                        var html = `
-                        <path d="M9.5 12.5a1.5 1.5 0 1 1-2-1.415V6.5a.5.5 0 0 1 1 0v4.585a1.5 1.5 0 0 1 1 1.415z"/>
-                        <path d="M5.5 2.5a2.5 2.5 0 0 1 5 0v7.55a3.5 3.5 0 1 1-5 0V2.5zM8 1a1.5 1.5 0 0 0-1.5 1.5v7.987l-.167.15a2.5 2.5 0 1 0 3.333 0l-.166-.15V2.5A1.5 1.5 0 0 0 8 1z"/>
-                        `;
-                    } else {
-                        var html = `
-                        <path d="M9.5 12.5a1.5 1.5 0 1 1-2-1.415V2.5a.5.5 0 0 1 1 0v8.585a1.5 1.5 0 0 1 1 1.415z"/>
-                        <path d="M5.5 2.5a2.5 2.5 0 0 1 5 0v7.55a3.5 3.5 0 1 1-5 0V2.5zM8 1a1.5 1.5 0 0 0-1.5 1.5v7.987l-.167.15a2.5 2.5 0 1 0 3.333 0l-.166-.15V2.5A1.5 1.5 0 0 0 8 1z"/>
-                        `;
-                        icon.classList.remove('bi-thermometer-half');
-                        icon.classList.add('bi-thermometer-high');
-                    }
-                    icon.innerHTML += html;
-                };
-            };
-        });
-    };
-
-</script>
-<script type="text/javascript">
     let deleteLogModal = document.getElementById('deleteLogModal');
-    let deleteButton = document.getElementById('deleteLogModalBtn');
+    let deleteForm = document.getElementById('deleteForm');
     deleteLogModal.addEventListener('show.bs.modal', function (event) {
         let targetButton = event.relatedTarget;
-        let logId = targetButton.dataset.logId;
-        deleteButton.dataset.logId = logId;
+        deleteForm.dataset.logId = targetButton.dataset.logId;
     });
-    deleteButton.onclick = function() {
-        let main = document.getElementById('main');
+    deleteForm.addEventListener('submit', function(event){
+        let deleteModalBody = document.getElementById('deleteModalBody');
         let html = `
-        <div class="d-flex justify-content-center" style="margin: 40% 25% 25% 25%;">
+        <div class="d-flex justify-content-center" style="margin: 25% 25% 25% 25%;">
             <div class="spinner-border" role="status">
                 <span class="visually-hidden">Loading...</span>
             </div>
         </div>
         `;
-        main.innerHTML  = html;
-        pywebview.api.delete_log(this.dataset.logId).then(function(response) {
-            get_logs();
-        });
-    };
+        deleteModalBody.innerHTML = html;
+        pywebview.api.delete_log(this.dataset.logId);
+    });
 </script>
 <script type="text/javascript">
     let editLogModal = document.getElementById('editLogModal');
-    let editButton = document.getElementById('editLogModalBtn');
+    let editForm = document.getElementById('editForm');
     let nameInput = document.getElementById('nameInput');
     let tempInput = document.getElementById('tempInput');
     editLogModal.addEventListener('show.bs.modal', function (event) {
         let targetButton = event.relatedTarget;
-        editButton.dataset.logId = targetButton.dataset.logId;
+        editForm.dataset.logId = targetButton.dataset.logId;
         nameInput.value = targetButton.dataset.name;
         tempInput.value = targetButton.dataset.temp;
     });
-    editButton.onclick = function() {
-        let main = document.getElementById('main');
+    editForm.addEventListener('submit', function(event){
+        let editModalBody = document.getElementById('editModalBody');
         let html = `
-        <div class="d-flex justify-content-center" style="margin: 40% 25% 25% 25%;">
+        <div class="d-flex justify-content-center" style="margin: 25% 25% 25% 25%;">
             <div class="spinner-border" role="status">
                 <span class="visually-hidden">Loading...</span>
             </div>
         </div>
         `;
-        main.innerHTML  = html;
-        pywebview.api.edit_log(this.dataset.logId, nameInput.value, tempInput.value).then(function(response) {
-            get_logs();
-        });
-    };
+        editModalBody.innerHTML  = html;
+        pywebview.api.edit_log(this.dataset.logId, nameInput.value, tempInput.value);
+    });
+</script>
+<script type="text/javascript">
+    let addLogModal = document.getElementById('addLogModal');
+    let addForm = document.getElementById('addForm');
+    let newNameInput = document.getElementById('newNameInput');
+    let newTempInput = document.getElementById('newTempInput');
+    let newDateInput = document.getElementById('newDateInput');
+    addForm.addEventListener('submit', function(event){
+        let addModalBody = document.getElementById('addModalBody');
+        let html = `
+        <div class="d-flex justify-content-center" style="margin: 25% 25% 25% 25%;">
+            <div class="spinner-border" role="status">
+                <span class="visually-hidden">Loading...</span>
+            </div>
+        </div>
+        `;
+        addModalBody.innerHTML  = html;
+        pywebview.api.add_log(newNameInput.value, newTempInput.value, newDateInput.value);
+    });
 </script>
 {% endblock %}
