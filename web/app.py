@@ -86,10 +86,26 @@ def search():
                 if log.name in fuzz and log.name.lower() != condition
             ]
         )
+        if len(result['fullmatch']):
+            average_temp = round(sum(map(
+                lambda log: log.temperature, result['fullmatch'])
+            ) / len(result['fullmatch']), 1)
+            min_temp = min(
+                result['fullmatch'], key=lambda x: x.temperature
+            ).temperature
+            max_temp = max(
+                result['fullmatch'], key=lambda x: x.temperature
+            ).temperature
+        else:
+            average_temp = min_temp = max_temp = 0
+
         return render_template(
             'search_name.html',
             window=(window.width, window.height),
             data=result,
             date=date.strftime('%Y-%m-%d'),
-            condition=condition
+            condition=condition,
+            average_temp=average_temp,
+            min_temp=min_temp,
+            max_temp=max_temp,
         )
