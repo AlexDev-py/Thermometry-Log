@@ -91,10 +91,8 @@
 </div>
 <script type="text/javascript">
     function get_logs() {
-        let x = new XMLHttpRequest();
-        x.open("GET", "/api/getLogs?date={{date}}", true);
-        x.onload = function () {
-            let data = JSON.parse(x.responseText);
+        pywebview.api.get_logs('{{date}}').then(function(response) {
+            let data = JSON.parse(response)
             let main = document.getElementById('main');
             main.innerHTML = '';
             if (data.logs.length == 0) {
@@ -243,10 +241,9 @@
                     icon.innerHTML += html;
                 };
             };
-        };
-        x.send();
+        });
     };
-    get_logs();
+
 </script>
 <script type="text/javascript">
     let deleteLogModal = document.getElementById('deleteLogModal');
@@ -295,5 +292,4 @@
         get_logs();
     };
 </script>
-
 {% endblock %}
