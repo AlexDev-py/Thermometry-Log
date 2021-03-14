@@ -1,0 +1,112 @@
+{% extends 'base.html' %}
+
+{% block header_content %}
+<button class="btn button btn-sm" type="button" style="margin-left: 1rem; margin-bottom: 1rem;" onclick="pywebview.api.open_url('/?date={{date}}')">
+    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-caret-left-fill" viewBox="0 0 16 16">
+        <path d="M3.86 8.753l5.482 4.796c.646.566 1.658.106 1.658-.753V3.204a1 1 0 0 0-1.659-.753l-5.48 4.796a1 1 0 0 0 0 1.506z"/>
+    </svg>
+    Вернуться
+</button>
+<h3 class="mx-4">Результаты по запросу `{{condition}}`</h3>
+{% endblock %}
+
+{% block body %}
+<div class="scrollable" style="height: {{window[1] * 0.92}}px">
+    {% block results %}{% endblock %}
+</div>
+<div class="modal fade" id="deleteLogModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content" style="background: var(--root-bg)">
+            <div class="modal-header">
+                <h5 class="modal-title" id="deleteLogModalLabel">Удалить запись?</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body" id="deleteModalBody">
+                Запись будет не возможно восстановить.
+            </div>
+            <div class="modal-footer">
+                <form id="deleteForm" data-log-id="" method="get">
+                    <input type="hidden" name="date" value="{{date}}"/>
+                    <input type="hidden" name="search" value="{{condition}}"/>
+                    <button type="button" class="btn btn-success" data-bs-dismiss="modal">Отмена</button>
+                    <button type="submit" class="btn btn-danger" id="deleteLogModalBtn">Удалить
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+<div class="modal fade" id="editLogModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content" style="background: var(--root-bg)">
+            <div class="modal-header">
+                <h5 class="modal-title" id="editLogModalLabel">Редактирование записи</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form id="editForm" data-log-id="" onsubmit="" method="get">
+                <input type="hidden" name="date" value="{{date}}"/>
+                <input type="hidden" name="search" value="{{condition}}"/>
+                <div class="modal-body" id="editModalBody">
+                    <div class="mb-3">
+                        <label for="nameInput" class="form-label">ФИО человека</label>
+                        <input type="text" class="form-control" id="nameInput" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="tempInput" class="form-label">Температура</label>
+                        <input type="number" class="form-control" id="tempInput" step="0.1" required>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Отмена</button>
+                    <button type="submit" class="btn btn-success" id="editLogModalBtn">Сохранить
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+<script type="text/javascript">
+    let deleteLogModal = document.getElementById('deleteLogModal');
+    let deleteForm = document.getElementById('deleteForm');
+    deleteLogModal.addEventListener('show.bs.modal', function (event) {
+        let targetButton = event.relatedTarget;
+        deleteForm.dataset.logId = targetButton.dataset.logId;
+    });
+    deleteForm.addEventListener('submit', function(event){
+        let deleteModalBody = document.getElementById('deleteModalBody');
+        let html = `
+        <div class="d-flex justify-content-center" style="margin: 25% 25% 25% 25%;">
+            <div class="spinner-border" role="status">
+                <span class="visually-hidden">Loading...</span>
+            </div>
+        </div>
+        `;
+        deleteModalBody.innerHTML = html;
+        pywebview.api.delete_log(this.dataset.logId);
+    });
+</script>
+<script type="text/javascript">
+    let editLogModal = document.getElementById('editLogModal');
+    let editForm = document.getElementById('editForm');
+    let nameInput = document.getElementById('nameInput');
+    let tempInput = document.getElementById('tempInput');
+    editLogModal.addEventListener('show.bs.modal', function (event) {
+        let targetButton = event.relatedTarget;
+        editForm.dataset.logId = targetButton.dataset.logId;
+        nameInput.value = targetButton.dataset.name;
+        tempInput.value = targetButton.dataset.temp;
+    });
+    editForm.addEventListener('submit', function(event){
+        let editModalBody = document.getElementById('editModalBody');
+        let html = `
+        <div class="d-flex justify-content-center" style="margin: 25% 25% 25% 25%;">
+            <div class="spinner-border" role="status">
+                <span class="visually-hidden">Loading...</span>
+            </div>
+        </div>
+        `;
+        editModalBody.innerHTML  = html;
+        pywebview.api.edit_log(this.dataset.logId, nameInput.value, tempInput.value);
+    });
+</script>
+{% endblock %}

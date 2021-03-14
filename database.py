@@ -33,11 +33,16 @@ if __name__ == '__main__':
     import random
     ThermometryLogs = ThermometryLog(db_path='database.sqlite')
     ThermometryLogs.create_table()
-    for _ in range(20):
-        ThermometryLogs.insert(
-            name=random.choice(['A', 'B', 'C', 'D']),
-            temperature=round(random.uniform(35.0, 38.0), 1),
-            date=f'14.03.2021'
-        )
+    names = [
+        'AlexDev', 'Konan', 'Naruto', 'James Arthur Gosling',
+        'Bjarne Stroustrup', 'Guido van Rossum'
+    ]
+    for d in range(10, 15):
+        for _ in range(20):
+            ThermometryLogs.insert(
+                name=random.choice(names),
+                temperature=Float(round(random.uniform(35.0, 38.0), 1)),
+                date=f'{d}.03.2021'
+            )
     # ThermometryLogs.insert(name='James Arthur Gosling Java', temperature=36.3, date='12.03.2021')
     # ThermometryLogs.insert(name='Bjarne Stroustrup', temperature=36.5, date='12.03.2021')
