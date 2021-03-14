@@ -254,7 +254,6 @@
         deleteButton.dataset.logId = logId;
     });
     deleteButton.onclick = function() {
-        pywebview.api.delete_log(this.dataset.logId);
         let main = document.getElementById('main');
         let html = `
         <div class="d-flex justify-content-center" style="margin: 40% 25% 25% 25%;">
@@ -264,7 +263,9 @@
         </div>
         `;
         main.innerHTML  = html;
-        get_logs();
+        pywebview.api.delete_log(this.dataset.logId).then(function(response) {
+            get_logs();
+        });
     };
 </script>
 <script type="text/javascript">
@@ -279,7 +280,6 @@
         tempInput.value = targetButton.dataset.temp;
     });
     editButton.onclick = function() {
-        pywebview.api.edit_log(this.dataset.logId, nameInput.value, tempInput.value);
         let main = document.getElementById('main');
         let html = `
         <div class="d-flex justify-content-center" style="margin: 40% 25% 25% 25%;">
@@ -289,7 +289,9 @@
         </div>
         `;
         main.innerHTML  = html;
-        get_logs();
+        pywebview.api.edit_log(this.dataset.logId, nameInput.value, tempInput.value).then(function(response) {
+            get_logs();
+        });
     };
 </script>
 {% endblock %}

@@ -14,8 +14,9 @@ class JSApi:
     def delete_log(self, log_id: int):
         """ Удаляем запись под номером `log_id` """
 
-        self.sql.execute(f'DELETE FROM thermometrylog WHERE id=?', log_id)
-        self.sql.commit()
+        sql = self.sql
+        sql.execute(f'DELETE FROM thermometrylog WHERE id=?', log_id)
+        sql.commit()
 
     def edit_log(self, log_id: int, name: str, temp: float):
         """ Изменяем запись под номером `log_id` """
