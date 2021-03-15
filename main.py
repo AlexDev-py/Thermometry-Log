@@ -1,9 +1,15 @@
-import webview
-import web.app
-from sqlite3_api import API
-from database import ThermometryLog, Float
+import logging.config
 from datetime import datetime
-import json
+from typing import NoReturn
+
+import webview
+from sqlite3_api import API
+
+import web.app
+from database import ThermometryLog, Float
+
+logging.config.fileConfig('logging.cfg')
+logger = logging.getLogger()
 
 
 class JSApi:
@@ -20,6 +26,7 @@ class JSApi:
         sql = self.sql
         sql.execute(f'DELETE FROM thermometrylog WHERE id=?', log_id)
         sql.commit()
+        logger.info(f'Запись `{log_id}` удалена.')
 
     def edit_log(self, log_id: int, name: str, temperature: float):
         """
@@ -33,39 +40,10 @@ class JSApi:
             name=name,
             temperature=Float(temperature)
         )
-
-    def get_logs(self, date: str = None) -> json.dumps:
-        """
-        Получаем записи из базы данных.
-        :param date: Дата в формате `%Y-%m-%d` для фильтрации записей.
-        """
-
-        if date:
-            date = datetime.strptime(date, '%Y-%m-%d')
-        else:
-            date = datetime.now()
-
-        logs = self.thermometry_logs.filter(
-            date=date.strftime('%d.%m.%Y'),
-            return_list=True,
-            return_type='visual'
+        logger.info(
+            f'Запись `{log_id}` изменена.'
+            f' новые данные: {name=}, {temperature=}'
         )
-
-        if len(logs):
-            average_temp = round(
-                sum(map(lambda log: log[2], logs)) / len(logs), 1
-            )
-            min_temp = min(logs, key=lambda x: x[2])[2]
-            max_temp = max(logs, key=lambda x: x[2])[2]
-        else:
-            average_temp = min_temp = max_temp = 0
-
-        return json.dumps(dict(
-            logs=logs,
-            average_temp=average_temp,
-            min_temp=min_temp,
-            max_temp=max_temp
-        ))
 
     def add_log(self, name: str, temperature: float, date: str):
         """
@@ -79,6 +57,10 @@ class JSApi:
             name=name,
             temperature=Float(temperature),
             date=datetime.strptime(date, '%Y-%m-%d').strftime('%d.%m.%Y')
+        )
+        logger.info(
+            'Добавлена новая запись. '
+            f'{name=}, {temperature=}, {date=}'
         )
 
     @property
@@ -103,39 +85,54 @@ class JSApi:
 
 
 def open_url(url: str):
-    """ Открывает ссылку """
+    """ Открывает ссылку. """
 
+    logger.info(f'Запрос на переход по адресу `{url}`.')
     window.load_url(f'{REAL_URL}/{url}')
 
 
 def destroy_app():
-    """ Закрывает приложение """
+    """ Закрывает окно. """
 
+    logger.info(f'Запрос на закрытие окна.')
     window.destroy()
 
 
 def hide_app():
-    """ Сворачивает/разворачивает окно """
+    """ Сворачивает окно. """
 
+    logger.info(f'Запрос на сворачивание окна.')
     window.minimize()
 
 
-def loaded():
-    """ Вызывается после загрузки DOM. """
+def main() -> NoReturn:
+    """ Запуск окна. """
 
-    window.evaluate_js('get_logs()')
+    def _init(win: webview.Window):
+        global REAL_URL
+        REAL_URL = win.real_url
+
+    def _on_loaded():
+        logger.info(f'Загружена страница `{window.get_current_url()}`')
+
+    def _on_closed():
+        logger.info('Окно закрыто.\n')
+
+    def _on_shown():
+        logger.info('Окно развернуто.')
+
+    window.loaded += _on_loaded
+    window.closed += _on_closed
+    window.shown += _on_shown
+    logger.info('Запуск окна.')
+    webview.start(_init, window, debug=True, gui='gt')
 
 
-def _init(win):
-    global REAL_URL
-    REAL_URL = win.real_url
-
-
+logger.info('Создание окна.')
 REAL_URL: str = ...  # Ссылка на локальный сервер с приложением
 web.app.window = window = webview.create_window(
     'Журнал термометрии', web.app.app, width=1080, height=720,
-    frameless=True, easy_drag=False, js_api=JSApi()
+    easy_drag=False, js_api=JSApi(), min_size=(940, 570)
 )
-window.loaded += loaded
 window.expose(open_url, destroy_app, hide_app)
-webview.start(_init, window, debug=True, gui='gt')
+main()

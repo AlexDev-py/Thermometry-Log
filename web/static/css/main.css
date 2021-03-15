@@ -29,10 +29,11 @@
     height: 12px;
     width: 12px;
 }
+
 *::-webkit-scrollbar-track {
     background: var(--scrollbar-track-color);
-    border-radius: 10px;
 }
+
 *::-webkit-scrollbar-thumb {
     width: 8px;
     background-color: var(--scrollbar-thumb-color);
@@ -40,19 +41,25 @@
     border: 3px solid var(--scrollbar-track-color);
 }
 
-header {
-    background: var(--accent-color);
-    box-shadow: 0 0 40px rgb(0 0 0 / 20%);
+html {
+    background: var(--root-bg);
+    overflow: auto;
+    height: 100%;
 }
 
 body {
+    overflow: auto;
     color: var(--root-fg);
     background: var(--root-bg);
+    height: 100%;
 }
 
-.scrollable {
-    display: block;
-    overflow: auto;
+.header {
+    padding-top: 1rem;
+    margin: 0% 10% 0% 10%;
+    background: var(--accent-color);
+    border-radius: 5px;
+    box-shadow: 0 0 30px rgb(0 0 0 / 30%)
 }
 
 .btn-outline {
@@ -73,16 +80,6 @@ thead, tbody tr {
 
 .table-hover>tbody>tr:hover {
     color: var(--scrollbar-track-color);
-}
-
-#logs-list {
-    background: var(--logs-bg);
-    box-shadow: 0 0 40px rgb(0 0 0 / 20%);
-}
-
-.row .col-sm {
-    border: 1px solid;
-    border-style: none solid none;
 }
 
 input[type="date"] {
@@ -144,4 +141,25 @@ form.search input {
     height: 32px;
     padding-left: 15px;
     color: var(--root-fg)
+}
+
+#topArrow {
+    position: fixed;
+    right: 45px;
+    bottom: 45px;
+    display: none;
+    color: var(--color-fg);
+}
+
+.stat-block {
+    border: 1px solid;
+    border-style: none solid;
+}
+
+.stat-block-start {
+    border-style: none solid none none;
+}
+
+.stat-block-end {
+    border-style: none none none solid;
 }

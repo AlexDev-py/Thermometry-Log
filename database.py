@@ -38,7 +38,7 @@ if __name__ == '__main__':
         'Bjarne Stroustrup', 'Guido van Rossum', 'Okabe', 'Edward Elric',
         'Alphonsw Elric', 'Kraft Lawrence'
     ]
-    for d in range(10, 15):
+    for d in range(14, 16):
         for _ in range(40):
             ThermometryLogs.insert(
                 name=random.choice(names),
