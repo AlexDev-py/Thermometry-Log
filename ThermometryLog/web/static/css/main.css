@@ -150,6 +150,29 @@ form.search input {
     color: var(--color-fg);
 }
 
+#menuButton {
+    position: fixed;
+    right: 45px;
+    top: 20px;
+    color: var(--color-fg);
+}
+
+#menu {
+    position: fixed;
+    display: none;
+    right: 45px;
+    top: 60px;
+    color: var(--color-fg);
+    background: var(--scrollbar-track-color);
+    border-radius: 5px 0px 5px 5px;
+}
+
+#menuButton:hover {
+    transition: 0.3s;
+    background: var(--scrollbar-track-color);
+    border-radius: 5px;
+}
+
 .stat-block {
     border: 1px solid;
     border-style: none solid;
