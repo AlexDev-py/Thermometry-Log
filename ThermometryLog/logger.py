@@ -1,3 +1,9 @@
+"""
+
+Настройка логирования.
+
+"""
+
 import logging.config
 import os
 
