@@ -1,15 +1,17 @@
-import os
 import logging.config
+import os
 
 LOCAL_APPDATA = (
         '/'.join(os.getenv('APPDATA').split('\\')[:-1]) +
         '/Local/ThermometryLog'
-)
-LOG_FILE = LOCAL_APPDATA + '/logs.log'
+)  # ...\AppData\Local\ThermometryLog
+LOG_FILE = LOCAL_APPDATA + '/logs.log'  # Путь к файлу для записи логов
 
+# Создаём директорию, если её нет
 if not os.path.exists(LOCAL_APPDATA):
     os.mkdir(LOCAL_APPDATA)
 
+# Конфигурация логера
 dictLogConfig = {
     'version': 1,
     'handlers': {

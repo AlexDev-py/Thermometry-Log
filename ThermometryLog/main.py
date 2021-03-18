@@ -4,6 +4,7 @@ from typing import NoReturn
 import webview
 from sqlite3_api import API
 
+import excel
 import web.app
 from database import ThermometryLog, Float
 from logger import logger, LOCAL_APPDATA
@@ -88,23 +89,10 @@ def open_url(url: str):
     window.load_url(f'{REAL_URL}/{url}')
 
 
-def destroy_app():
-    """ Закрывает окно. """
-
-    logger.info(f'Запрос на закрытие окна.')
-    window.destroy()
-
-
-def hide_app():
-    """ Сворачивает окно. """
-
-    logger.info(f'Запрос на сворачивание окна.')
-    window.minimize()
-
-
 def main() -> NoReturn:
     """ Запуск окна. """
 
+    # Создаём базу данных, если её нет
     ThermometryLog(DB_PATH).create_table()
 
     def _init(win: webview.Window):
@@ -120,21 +108,25 @@ def main() -> NoReturn:
     def _on_shown():
         logger.info('Окно развернуто.')
 
+    # Добавляем обработчики событий
     window.loaded += _on_loaded
     window.closed += _on_closed
     window.shown += _on_shown
+
     logger.info('Запуск окна.')
     webview.start(_init, window, debug=True)
 
 
 logger.info('Создание окна.')
 REAL_URL: str = ...  # Ссылка на локальный сервер с приложением
-web.app.DB_PATH = DB_PATH = f'{LOCAL_APPDATA}\database.sqlite'
-web.app.window = window = webview.create_window(
+DB_PATH = f'{LOCAL_APPDATA}\database.sqlite'  # Путь к базе данных
+web.app.DB_PATH = excel.DB_PATH = DB_PATH
+
+window = webview.create_window(
     'Журнал термометрии', web.app.app, width=1080, height=720,
     easy_drag=False, js_api=JSApi(), min_size=(940, 570)
 )
-window.expose(open_url, destroy_app, hide_app)
+window.expose(open_url)  # Добавляем дополнительные методы к JSApi
 
 if __name__ == '__main__':
     main()

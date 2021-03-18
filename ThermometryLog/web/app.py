@@ -5,21 +5,20 @@
 """
 
 import difflib
+import os
 import re
 from datetime import datetime
 from typing import List
-import os
 
 from flask import Flask, render_template, request
-from webview import Window
 
 from database import ThermometryLog, Float
 from logger import logger
 
 logger.info('Создание веб-приложения.')
-window: Window = ...
-DB_PATH: str = ...
+DB_PATH: str = ...  # Путь к базе данных
 
+# Настройка окружения. (При сборке приложения)
 ROOT = os.path.abspath(__file__)
 if ROOT.endswith('.pyc'):
     ROOT = '/'.join(ROOT.split('\\')[:-4])
@@ -41,6 +40,7 @@ def home():
         'Запрос на главную страницу '
         f'с параметрами {dict(request.args)}.'
     )
+
     date = datetime.now()
     if request.args.get('date'):
         date = datetime.strptime(request.args.get('date'), '%Y-%m-%d')
@@ -67,7 +67,6 @@ def home():
         average_temp=average_temp,
         min_temp=min_temp,
         max_temp=max_temp,
-        window=(window.width, window.height),
         date=date.strftime('%Y-%m-%d'),
         now_date=datetime.now().strftime('%Y-%m-%d')
     )
@@ -86,7 +85,8 @@ def search():
         'Запрос на страницу поиска '
         f'с параметрами {dict(request.args)}.'
     )
-    condition: str = request.args.get('search').lower()
+
+    condition: str = request.args.get('search').lower()  # Поисковый запрос
     date = datetime.strptime(request.args.get('date'), '%Y-%m-%d')
     thermometry_log = ThermometryLog(DB_PATH)
 
@@ -102,7 +102,6 @@ def search():
         logger.info('Отправка ответа.')
         return render_template(
             'search_temp.html',
-            window=(window.width, window.height),
             data=results,
             date=date.strftime('%Y-%m-%d'),
             condition=condition
@@ -110,18 +109,21 @@ def search():
     else:
         logger.info('Получение записей.')
         logs = thermometry_log.filter(return_list=True)
-        names = set(log.name for log in logs)
+        names = set(log.name for log in logs)  # Всё ФИО
+        # Ищем наиболее похожие
         fuzz = difflib.get_close_matches(condition, names)
+
         result = dict(
             fullmatch=[
                 log for log in logs
                 if log.name.lower() == condition
-            ],
+            ],  # Результаты с полным совпадением по запросу
             other=[
                 log for log in logs
                 if log.name in fuzz and log.name.lower() != condition
-            ]
+            ]  # Похожие результаты
         )
+
         if len(result['fullmatch']):
             average_temp = round(sum(map(
                 lambda log: log.temperature, result['fullmatch'])
@@ -134,10 +136,10 @@ def search():
             ).temperature
         else:
             average_temp = min_temp = max_temp = 0
+
         logger.info('Отправка ответа.')
         return render_template(
             'search_name.html',
-            window=(window.width, window.height),
             data=result,
             date=date.strftime('%Y-%m-%d'),
             condition=condition,
