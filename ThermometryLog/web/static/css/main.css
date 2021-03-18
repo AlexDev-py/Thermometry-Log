@@ -106,7 +106,6 @@ input[type="date"]:focus {
 
 form.search {
     position: relative;
-    width: 300px;
     margin: 0 auto;
     background: var(--search-bg);
     border-radius: 5px;

@@ -1,4 +1,3 @@
-import logging.config
 from datetime import datetime
 from typing import NoReturn
 
@@ -7,9 +6,7 @@ from sqlite3_api import API
 
 import web.app
 from database import ThermometryLog, Float
-
-logging.config.fileConfig('logging.cfg')
-logger = logging.getLogger()
+from logger import logger, LOCAL_APPDATA
 
 
 class JSApi:
@@ -71,7 +68,7 @@ class JSApi:
     def sql(self) -> API:
         """ Получение нового API """
 
-        return API(db_path='database.sqlite')
+        return API(DB_PATH)
 
     @property
     def thermometry_logs(self):
@@ -81,7 +78,7 @@ class JSApi:
     def thermometry_logs(self) -> ThermometryLog:
         """ Получение нового ThermometryLog """
 
-        return ThermometryLog(db_path='database.sqlite')
+        return ThermometryLog(DB_PATH)
 
 
 def open_url(url: str):
@@ -108,6 +105,8 @@ def hide_app():
 def main() -> NoReturn:
     """ Запуск окна. """
 
+    ThermometryLog(DB_PATH).create_table()
+
     def _init(win: webview.Window):
         global REAL_URL
         REAL_URL = win.real_url
@@ -125,14 +124,17 @@ def main() -> NoReturn:
     window.closed += _on_closed
     window.shown += _on_shown
     logger.info('Запуск окна.')
-    webview.start(_init, window, debug=True, gui='gt')
+    webview.start(_init, window, debug=True)
 
 
 logger.info('Создание окна.')
 REAL_URL: str = ...  # Ссылка на локальный сервер с приложением
+web.app.DB_PATH = DB_PATH = f'{LOCAL_APPDATA}\database.sqlite'
 web.app.window = window = webview.create_window(
     'Журнал термометрии', web.app.app, width=1080, height=720,
     easy_drag=False, js_api=JSApi(), min_size=(940, 570)
 )
 window.expose(open_url, destroy_app, hide_app)
-main()
+
+if __name__ == '__main__':
+    main()

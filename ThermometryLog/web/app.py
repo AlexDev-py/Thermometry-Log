@@ -5,21 +5,32 @@
 """
 
 import difflib
-import logging.config
 import re
 from datetime import datetime
 from typing import List
+import os
 
 from flask import Flask, render_template, request
 from webview import Window
 
 from database import ThermometryLog, Float
+from logger import logger
 
-logging.config.fileConfig('logging.cfg')
-logger = logging.getLogger()
 logger.info('Создание веб-приложения.')
-app = Flask(__name__)
 window: Window = ...
+DB_PATH: str = ...
+
+ROOT = os.path.abspath(__file__)
+if ROOT.endswith('.pyc'):
+    ROOT = '/'.join(ROOT.split('\\')[:-4])
+else:
+    ROOT = '/'.join(ROOT.split('\\')[:-2])
+
+app = Flask(
+    __name__,
+    template_folder=f'{ROOT}/web/templates',
+    static_folder=f'{ROOT}/web/static'
+)
 
 
 @app.route('/')
@@ -35,7 +46,7 @@ def home():
         date = datetime.strptime(request.args.get('date'), '%Y-%m-%d')
 
     logger.info('Получение записей.')
-    logs: List[ThermometryLog] = ThermometryLog('database.sqlite').filter(
+    logs: List[ThermometryLog] = ThermometryLog(DB_PATH).filter(
         date=date.strftime('%d.%m.%Y'),
         return_list=True,
     )
@@ -77,7 +88,7 @@ def search():
     )
     condition: str = request.args.get('search').lower()
     date = datetime.strptime(request.args.get('date'), '%Y-%m-%d')
-    thermometry_log = ThermometryLog(db_path='database.sqlite')
+    thermometry_log = ThermometryLog(DB_PATH)
 
     # Если передана температура
     if re.fullmatch(r'\d+[.,]\d+', condition) or condition.isdigit():
