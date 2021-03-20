@@ -37,7 +37,7 @@ def import_data(filename: str, db: ThermometryLog):
 
     logger.info('Импорт записей.')
     for sheet_name in workbook.sheetnames:
-        try:
+        try:  # Валидация поля `date`
             date = datetime.strptime(sheet_name, '%d.%m.%Y')
         except ValueError:
             continue
@@ -50,9 +50,10 @@ def import_data(filename: str, db: ThermometryLog):
             continue
 
         for i in range(3, rows + 1):
+            # Валидация поля `name`
             if len(name := sheet.cell(i, 1).value) == 0:
                 continue
-            try:
+            try:  # Валидация поля `temperature`
                 temperature = float(sheet.cell(i, 2).value)
             except ValueError:
                 continue
@@ -72,9 +73,11 @@ def export_data(filename: str, dates: List[str], db: ThermometryLog):
     :param db: API для работы с базой данных.
     """
 
+    logger.info('Создание книги.')
     workbook = openpyxl.Workbook()  # Создаем файл
     workbook.remove(workbook['Sheet'])  # Удаляем начальный лист
 
+    logger.info('Заполнение книги.')
     for date in dates:
         data: List[ThermometryLog] = db.filter(
             return_list=True, date=date
