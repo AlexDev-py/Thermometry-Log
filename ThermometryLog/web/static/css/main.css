@@ -1,11 +1,10 @@
 :root {
-    --scrollbar-thumb-color: #FFFFFF;
-    --scrollbar-track-color: rgba(147,144,250,1);
     --root-bg: radial-gradient(#404F7F, #334069);
     --root-fg: #FFFFFF;
-    --logs-bg: linear-gradient(175deg, rgba(147,144,250,1) 0%, rgba(80,73,162,1) 100%);
-    --search-bg: linear-gradient(328deg, rgba(62,76,124,1) 0%, rgba(56,68,111,1) 100%);
-    --accent-color: radial-gradient(#2D375C, #242D4D);
+    --accent-gradient-color: linear-gradient(175deg, rgba(147,144,250,1) 0%, rgba(80,73,162,1) 100%);
+    --accent-color: rgba(147,144,250,1);
+    --search-filed-bg: linear-gradient(328deg, rgba(62,76,124,1) 0%, rgba(56,68,111,1) 100%);
+    --secondary-gradient-color: radial-gradient(#2D375C, #242D4D);
     --temp-color-352: #4060AA;
     --temp-color-354: #3E73B7;
     --temp-color-356: #419FD6;
@@ -31,14 +30,14 @@
 }
 
 *::-webkit-scrollbar-track {
-    background: var(--scrollbar-track-color);
+    background: var(--accent-color);
 }
 
 *::-webkit-scrollbar-thumb {
     width: 8px;
-    background-color: var(--scrollbar-thumb-color);
+    background-color: var(--root-fg);
     border-radius: 10px;
-    border: 3px solid var(--scrollbar-track-color);
+    border: 3px solid var(--accent-color);
 }
 
 html {
@@ -57,14 +56,14 @@ body {
 .header {
     padding-top: 1rem;
     margin: 0% 10% 0% 10%;
-    background: var(--accent-color);
+    background: var(--secondary-gradient-color);
     border-radius: 5px;
     box-shadow: 0 0 30px rgb(0 0 0 / 30%)
 }
 
 .btn-outline {
-    color: var(--logs-bg);
-    border-color: var(--logs-bg);
+    color: var(--accent-gradient-color);
+    border-color: var(--accent-gradient-color);
 }
 
 .btn-outline:hover {
@@ -79,7 +78,7 @@ thead, tbody tr {
 }
 
 .table-hover>tbody>tr:hover {
-    color: var(--scrollbar-track-color);
+    color: var(--accent-color);
 }
 
 input[type="date"] {
@@ -95,7 +94,7 @@ input[type="date"]:focus {
 .button {
     transition: all 0.2s ease-out 0s;
     color: var(--root-fg);
-    background: var(--logs-bg);
+    background: var(--accent-gradient-color);
 }
 
 .button:hover {
@@ -107,7 +106,7 @@ input[type="date"]:focus {
 form.search {
     position: relative;
     margin: 0 auto;
-    background: var(--search-bg);
+    background: var(--search-filed-bg);
     border-radius: 5px;
     box-shadow: 0 0 10px rgb(0 0 0 / 50%)
 }
@@ -132,7 +131,7 @@ form.search button:before  {
     content: "\f002";
     font-family: FontAwesome;
     font-size: 16px;
-    color: var(--search-bg);
+    color: var(--search-filed-bg);
 }
 
 form.search input {
@@ -163,13 +162,13 @@ form.search input {
     right: 45px;
     top: 60px;
     color: var(--color-fg);
-    background: var(--scrollbar-track-color);
+    background: var(--accent-color);
     border-radius: 5px 0px 5px 5px;
 }
 
 #menuButton:hover {
     transition: 0.3s;
-    background: var(--scrollbar-track-color);
+    background: var(--accent-color);
     border-radius: 5px;
 }
 
