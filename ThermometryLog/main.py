@@ -1,5 +1,15 @@
+"""
+
+Основной файл.
+Может являться пусковым.
+
+Здесь связываются все компоненты приложения.
+
+"""
+
 from datetime import datetime, timedelta
 from typing import NoReturn, Literal, Tuple
+import json
 
 import webview
 from sqlite3_api import API
@@ -16,6 +26,9 @@ class JSApi:
     Методы, которые будут доступны для использования из JavaScript`а.
     """
 
+    def __init__(self):
+        self.real_url: str = ...  # Ссылка на локальный сервер с приложением
+
     def delete_log(self, log_id: int):
         """
         Удаляем запись под номером `log_id`.
@@ -23,9 +36,9 @@ class JSApi:
         """
 
         sql = self.sql
-        sql.execute(f'DELETE FROM thermometrylog WHERE id=?', log_id)
+        sql.execute("DELETE FROM thermometrylog WHERE id=?", log_id)
         sql.commit()
-        logger.info(f'Запись `{log_id}` удалена.')
+        logger.info("Запись `%s` удалена.", log_id)
 
     def edit_log(self, log_id: int, name: str, temperature: float):
         """
@@ -36,12 +49,13 @@ class JSApi:
         """
 
         self.thermometry_logs.filter(id=log_id).update(
-            name=name,
-            temperature=Float(temperature)
+            name=name, temperature=Float(temperature)
         )
         logger.info(
-            f'Запись `{log_id}` изменена.'
-            f' новые данные: {name=}, {temperature=}'
+            "Запись `%s` изменена." " новые данные: name=%s, temperature=%s",
+            log_id,
+            name,
+            temperature,
         )
 
     def add_log(self, name: str, temperature: float, date: str):
@@ -55,11 +69,13 @@ class JSApi:
         self.thermometry_logs.insert(
             name=name,
             temperature=Float(temperature),
-            date=datetime.strptime(date, '%Y-%m-%d').strftime('%d.%m.%Y')
+            date=datetime.strptime(date, "%Y-%m-%d").strftime("%d.%m.%Y"),
         )
         logger.info(
-            'Добавлена новая запись. '
-            f'{name=}, {temperature=}, {date=}'
+            "Добавлена новая запись. " "name=%s, temperature=%s, date=%s",
+            name,
+            temperature,
+            date,
         )
 
     def import_logs(self):
@@ -67,17 +83,15 @@ class JSApi:
         Импортируем записи.
         """
 
-        logger.info('Запрос на импортирование данных.')
+        logger.info("Запрос на импортирование данных.")
         file = window.create_file_dialog(
             dialog_type=webview.OPEN_DIALOG,
-            file_types=(
-                'Excel file (*.xls;*.xlsx;*.xlsm)',
-                'csv file (*.csv)'
-            )
+            file_types=("Excel file (*.xls;*.xlsx;*.xlsm)", "csv file (*.csv)"),
         )  # Получаем путь к нужному файлу
 
         if file:
-            window.evaluate_js("""
+            window.evaluate_js(
+                """
             document.getElementById('importLogsModalBody').innerHTML = `
             <div class="d-flex justify-content-center">
                 <div class="spinner-border" role="status">
@@ -85,55 +99,54 @@ class JSApi:
                 </div>
             </div>
             `;
-            """)
+            """
+            )
             file: str = file[0]
-            logger.info(f'Выбран файл {file}')
-            file_type = file.split('.')[-1]  # Расширение файла
+            logger.info("Выбран файл %s", file)
+            file_type = file.split(".")[-1]  # Расширение файла
 
-            if file_type in ['xls', 'xlsx', 'xlsm']:  # Excel файл
-                excel.import_data(file, db=self.thermometry_logs)
+            if file_type in ["xls", "xlsx", "xlsm"]:  # Excel файл
+                excel.import_data(file, self.thermometry_logs)
             else:
-                csv_handler.import_data(file, db=self.thermometry_logs)
-            logger.info('Импорт завершён.')
+                csv_handler.import_data(file, self.thermometry_logs)
+            logger.info("Импорт завершён.")
         else:
-            logger.info('Файл не выбран.')
+            logger.info("Файл не выбран.")
 
-        window.evaluate_js("""
+        window.evaluate_js(
+            """
         document.getElementById('importLogsForm').submit();
-        """)  # Обновляем страницу
+        """
+        )  # Обновляем страницу
 
-    def export_logs(
-            self,
-            file_type: Literal['excel', 'csv'],
-            dates: Tuple[str, str]
-    ):
+    def export_logs(self, file_type: Literal["excel", "csv"], dates: Tuple[str, str]):
         """
         Экспорт записей в excel или csv.
         :param file_type: Куда импортируем.
         :param dates: Временные рамки (в формате '%Y-%m-%d').
         """
 
-        logger.info('Запрос на импортирование файлов.')
-        window.evaluate_js("""
+        logger.info("Запрос на импортирование файлов.")
+        window.evaluate_js(
+            """
         document.getElementById('exportLogsModalBody').innerHTML = `
         <div class="text-center py-5">
             Выберите файл
         </div>
         `;
-        """)
+        """
+        )
 
-        start_date = datetime.strptime(dates[0], '%Y-%m-%d')
-        end_date = datetime.strptime(dates[1], '%Y-%m-%d')
+        start_date = datetime.strptime(dates[0], "%Y-%m-%d")
+        end_date = datetime.strptime(dates[1], "%Y-%m-%d")
         dates = [
-            (start_date + timedelta(days=i)).strftime('%d.%m.%Y')
+            (start_date + timedelta(days=i)).strftime("%d.%m.%Y")
             for i in range((end_date - start_date).days + 1)
         ]  # Список дат, которые нужно экспортировать
 
-        save_filename = 'Журнал термометрии {dates}{ft}'.format(
-            dates=(
-                dates[0] if dates[0] == dates[-1]
-                else f'{dates[0]} - {dates[-1]}'),
-            ft='.xlsx' if file_type == 'excel' else '.csv'
+        save_filename = "Журнал термометрии {dates}{ft}".format(
+            dates=(dates[0] if dates[0] == dates[-1] else f"{dates[0]} - {dates[-1]}"),
+            ft=".xlsx" if file_type == "excel" else ".csv",
         )  # Имя файла для сохранения
         file = window.create_file_dialog(
             dialog_type=webview.SAVE_DIALOG,
@@ -141,7 +154,8 @@ class JSApi:
         )  # Получаем местоположение файла
 
         if file:
-            window.evaluate_js("""
+            window.evaluate_js(
+                """
             document.getElementById('exportLogsModalBody').innerHTML = `
             <div class="d-flex justify-content-center py-5">
                 <div class="spinner-border" role="status">
@@ -149,20 +163,23 @@ class JSApi:
                 </div>
             </div>
             `;
-            """)
-            logger.info(f'Выбран файл {file}')
+            """
+            )
+            logger.info("Выбран файл %s", file)
 
-            if file_type == 'excel':
-                excel.export_data(file, dates, db=self.thermometry_logs)
+            if file_type == "excel":
+                excel.export_data(file, dates, self.thermometry_logs)
             else:
-                csv_handler.export_data(file, dates, db=self.thermometry_logs)
-            logger.info('Экспорт завершён.')
+                csv_handler.export_data(file, dates, self.thermometry_logs)
+            logger.info("Экспорт завершён.")
         else:
-            logger.info('Файл не выбран.')
+            logger.info("Файл не выбран.")
 
-        window.evaluate_js("""
+        window.evaluate_js(
+            """
         document.getElementById('exportLogsForm').submit();
-        """)  # Обновляем страницу
+        """
+        )  # Обновляем страницу
 
     @property
     def sql(self):
@@ -184,12 +201,27 @@ class JSApi:
 
         return ThermometryLog(DB_PATH)
 
+    def open_url(self, url: str):
+        """ Открывает ссылку. """
 
-def open_url(url: str):
-    """ Открывает ссылку. """
+        logger.info("Запрос на переход по адресу `%s`.", url)
+        window.load_url(f"{self.real_url}/{url}")
 
-    logger.info(f'Запрос на переход по адресу `{url}`.')
-    window.load_url(f'{REAL_URL}/{url}')
+
+def change_color_scheme(color_scheme: Literal["default", "light", "dark"]):
+    """
+    Изменяем цветовую схему.
+    """
+
+    web.app.settings["color_scheme"] = color_scheme
+    with open(web.app.SETTINGS_FILE, "w") as settings_file:
+        json.dump(web.app.settings, settings_file)
+
+    window.evaluate_js(
+        """
+    document.getElementById('settingsForm').submit();
+    """
+    )  # Обновляем страницу
 
 
 def main() -> NoReturn:
@@ -199,37 +231,41 @@ def main() -> NoReturn:
     ThermometryLog(DB_PATH).create_table()
 
     def _init(win: webview.Window):
-        global REAL_URL
-        REAL_URL = win.real_url
+        js_api.real_url = win.real_url
 
     def _on_loaded():
-        logger.info(f'Загружена страница `{window.get_current_url()}`')
+        logger.info("Загружена страница `%s`", window.get_current_url())
 
     def _on_closed():
-        logger.info('Окно закрыто.\n')
+        logger.info("Окно закрыто.\n")
 
     def _on_shown():
-        logger.info('Окно развернуто.')
+        logger.info("Окно развернуто.")
 
     # Добавляем обработчики событий
     window.loaded += _on_loaded
     window.closed += _on_closed
     window.shown += _on_shown
 
-    logger.info('Запуск окна.')
+    logger.info("Запуск окна.")
     webview.start(_init, window, debug=True)
 
 
-logger.info('Создание окна.')
-REAL_URL: str = ...  # Ссылка на локальный сервер с приложением
-DB_PATH = f'{LOCAL_APPDATA}\database.sqlite'  # Путь к базе данных
+logger.info("Создание окна.")
+js_api = JSApi()
+DB_PATH = rf"{LOCAL_APPDATA}\database.sqlite"  # Путь к базе данных
 web.app.DB_PATH = DB_PATH
 
 window = webview.create_window(
-    'Журнал термометрии', web.app.app, width=1080, height=720,
-    easy_drag=False, js_api=JSApi(), min_size=(940, 570)
+    "Журнал термометрии",
+    web.app.app,
+    width=1080,
+    height=720,
+    easy_drag=False,
+    js_api=js_api,
+    min_size=(940, 570),
 )
-window.expose(open_url)  # Добавляем дополнительные методы к JSApi
+window.expose(change_color_scheme)  # Добавляем дополнительные методы к JSApi
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()

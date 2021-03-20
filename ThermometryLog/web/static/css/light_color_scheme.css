@@ -1,0 +1,9 @@
+:root {
+    --root-bg: radial-gradient(#fffafa, #faf2f2);
+    --root-fg: #767676;
+    --header-fg: #FFFFFF;
+    --accent-gradient-color: linear-gradient(144deg, #1e1e1e 0%, #131212 100%);
+    --accent-color: #1e1e1e;
+    --search-filed-bg: #131212;
+    --secondary-gradient-color: radial-gradient(#333333, #292828);
+}

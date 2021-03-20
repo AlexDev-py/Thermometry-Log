@@ -1,3 +1,4 @@
 sqlite3-api==2.0.1
 flask==1.1.2
 pywebview==3.4
+openpyxl==3.0.7

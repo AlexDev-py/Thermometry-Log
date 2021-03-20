@@ -1,10 +1,4 @@
 :root {
-    --root-bg: radial-gradient(#404F7F, #334069);
-    --root-fg: #FFFFFF;
-    --accent-gradient-color: linear-gradient(175deg, rgba(147,144,250,1) 0%, rgba(80,73,162,1) 100%);
-    --accent-color: rgba(147,144,250,1);
-    --search-filed-bg: linear-gradient(328deg, rgba(62,76,124,1) 0%, rgba(56,68,111,1) 100%);
-    --secondary-gradient-color: radial-gradient(#2D375C, #242D4D);
     --temp-color-352: #4060AA;
     --temp-color-354: #3E73B7;
     --temp-color-356: #419FD6;
@@ -35,7 +29,7 @@
 
 *::-webkit-scrollbar-thumb {
     width: 8px;
-    background-color: var(--root-fg);
+    background-color: var(--header-fg);
     border-radius: 10px;
     border: 3px solid var(--accent-color);
 }
@@ -54,6 +48,7 @@ body {
 }
 
 .header {
+    color: var(--header-fg);
     padding-top: 1rem;
     margin: 0% 10% 0% 10%;
     background: var(--secondary-gradient-color);
@@ -93,12 +88,12 @@ input[type="date"]:focus {
 
 .button {
     transition: all 0.2s ease-out 0s;
-    color: var(--root-fg);
+    color: var(--header-fg);
     background: var(--accent-gradient-color);
 }
 
 .button:hover {
-    color: var(--root-fg);
+    color: currentColor;
     border-radius: 5px;
     box-shadow: 0 0 40px rgb(0 0 0 / 20%)
 }
@@ -108,7 +103,7 @@ form.search {
     margin: 0 auto;
     background: var(--search-filed-bg);
     border-radius: 5px;
-    box-shadow: 0 0 10px rgb(0 0 0 / 50%)
+    box-shadow: 0 0 10px rgb(0 0 0 / 10%)
 }
 
 form.search input, button {
@@ -124,21 +119,20 @@ form.search button {
     top: 0;
     right: 0;
     cursor: pointer;
-    color: currentcolor;
 }
 
 form.search button:before  {
     content: "\f002";
     font-family: FontAwesome;
     font-size: 16px;
-    color: var(--search-filed-bg);
+    color: var(--header-fg);
 }
 
 form.search input {
     width: 100%;
     height: 32px;
     padding-left: 15px;
-    color: var(--root-fg)
+    color: currentColor;
 }
 
 #topArrow {
@@ -146,14 +140,14 @@ form.search input {
     right: 45px;
     bottom: 45px;
     display: none;
-    color: var(--color-fg);
+    color: currentColor;
 }
 
 #menuButton {
     position: fixed;
     right: 45px;
     top: 20px;
-    color: var(--color-fg);
+    color: currentColor;
 }
 
 #menu {
@@ -161,7 +155,7 @@ form.search input {
     display: none;
     right: 45px;
     top: 60px;
-    color: var(--color-fg);
+    color: var(--header-fg);
     background: var(--accent-color);
     border-radius: 5px 0px 5px 5px;
 }
@@ -170,6 +164,7 @@ form.search input {
     transition: 0.3s;
     background: var(--accent-color);
     border-radius: 5px;
+    color: var(--header-fg);
 }
 
 .stat-block {
