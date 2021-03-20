@@ -5,6 +5,7 @@ import webview
 from sqlite3_api import API
 
 import excel
+import csv_handler
 import web.app
 from database import ThermometryLog, Float
 from logger import logger, LOCAL_APPDATA
@@ -92,8 +93,7 @@ class JSApi:
             if file_type in ['xls', 'xlsx', 'xlsm']:  # Excel файл
                 excel.import_data(file, db=self.thermometry_logs)
             else:
-                # TODO: csv import.
-                ...
+                csv_handler.import_data(file, db=self.thermometry_logs)
             logger.info('Импорт завершён.')
         else:
             logger.info('Файл не выбран.')
@@ -155,8 +155,7 @@ class JSApi:
             if file_type == 'excel':
                 excel.export_data(file, dates, db=self.thermometry_logs)
             else:
-                # TODO: csv export.
-                ...
+                csv_handler.export_data(file, dates, db=self.thermometry_logs)
             logger.info('Экспорт завершён.')
         else:
             logger.info('Файл не выбран.')
@@ -164,7 +163,6 @@ class JSApi:
         window.evaluate_js("""
         document.getElementById('exportLogsForm').submit();
         """)  # Обновляем страницу
-
 
     @property
     def sql(self):
