@@ -1,5 +1,5 @@
-from datetime import datetime
-from typing import NoReturn
+from datetime import datetime, timedelta
+from typing import NoReturn, Literal, Tuple
 
 import webview
 from sqlite3_api import API
@@ -61,6 +61,111 @@ class JSApi:
             f'{name=}, {temperature=}, {date=}'
         )
 
+    def import_logs(self):
+        """
+        Импортируем записи.
+        """
+
+        logger.info('Запрос на импортирование данных.')
+        file = window.create_file_dialog(
+            dialog_type=webview.OPEN_DIALOG,
+            file_types=(
+                'Excel file (*.xls;*.xlsx;*.xlsm)',
+                'csv file (*.csv)'
+            )
+        )  # Получаем путь к нужному файлу
+
+        if file:
+            window.evaluate_js("""
+            document.getElementById('importLogsModalBody').innerHTML = `
+            <div class="d-flex justify-content-center">
+                <div class="spinner-border" role="status">
+                    <span class="visually-hidden">Loading...</span>
+                </div>
+            </div>
+            `;
+            """)
+            file: str = file[0]
+            logger.info(f'Выбран файл {file}')
+            file_type = file.split('.')[-1]  # Расширение файла
+
+            if file_type in ['xls', 'xlsx', 'xlsm']:  # Excel файл
+                excel.import_data(file, db=self.thermometry_logs)
+            else:
+                # TODO: csv import.
+                ...
+            logger.info('Импорт завершён.')
+        else:
+            logger.info('Файл не выбран.')
+
+        window.evaluate_js("""
+        document.getElementById('importLogsForm').submit();
+        """)  # Обновляем страницу
+
+    def export_logs(
+            self,
+            file_type: Literal['excel', 'csv'],
+            dates: Tuple[str, str]
+    ):
+        """
+        Экспорт записей в excel или csv.
+        :param file_type: Куда импортируем.
+        :param dates: Временные рамки (в формате '%Y-%m-%d').
+        """
+
+        logger.info('Запрос на импортирование файлов.')
+        window.evaluate_js("""
+        document.getElementById('exportLogsModalBody').innerHTML = `
+        <div class="text-center py-5">
+            Выберите файл
+        </div>
+        `;
+        """)
+
+        start_date = datetime.strptime(dates[0], '%Y-%m-%d')
+        end_date = datetime.strptime(dates[1], '%Y-%m-%d')
+        dates = [
+            (start_date + timedelta(days=i)).strftime('%d.%m.%Y')
+            for i in range((end_date - start_date).days + 1)
+        ]  # Список дат, которые нужно экспортировать
+
+        save_filename = 'Журнал термометрии {dates}{ft}'.format(
+            dates=(
+                dates[0] if dates[0] == dates[-1]
+                else f'{dates[0]} - {dates[-1]}'),
+            ft='.xlsx' if file_type == 'excel' else '.csv'
+        )  # Имя файла для сохранения
+        file = window.create_file_dialog(
+            dialog_type=webview.SAVE_DIALOG,
+            save_filename=save_filename,
+        )  # Получаем местоположение файла
+
+        if file:
+            window.evaluate_js("""
+            document.getElementById('exportLogsModalBody').innerHTML = `
+            <div class="d-flex justify-content-center py-5">
+                <div class="spinner-border" role="status">
+                    <span class="visually-hidden">Loading...</span>
+                </div>
+            </div>
+            `;
+            """)
+            logger.info(f'Выбран файл {file}')
+
+            if file_type == 'excel':
+                excel.export_data(file, dates, db=self.thermometry_logs)
+            else:
+                # TODO: csv export.
+                ...
+            logger.info('Экспорт завершён.')
+        else:
+            logger.info('Файл не выбран.')
+
+        window.evaluate_js("""
+        document.getElementById('exportLogsForm').submit();
+        """)  # Обновляем страницу
+
+
     @property
     def sql(self):
         """ sqlite3_api.API """
@@ -120,7 +225,7 @@ def main() -> NoReturn:
 logger.info('Создание окна.')
 REAL_URL: str = ...  # Ссылка на локальный сервер с приложением
 DB_PATH = f'{LOCAL_APPDATA}\database.sqlite'  # Путь к базе данных
-web.app.DB_PATH = excel.DB_PATH = DB_PATH
+web.app.DB_PATH = DB_PATH
 
 window = webview.create_window(
     'Журнал термометрии', web.app.app, width=1080, height=720,

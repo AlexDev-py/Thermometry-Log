@@ -84,7 +84,7 @@
     </svg>
 </div>
 <div id="menu" class="p-3">
-    <div class="mb-1">
+    <div class="mb-1" data-bs-toggle="modal" data-bs-target="#importLogsModal" onclick="pywebview.api.import_logs();">
         <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-journal-arrow-down" viewBox="0 0 16 16">
             <path fill-rule="evenodd" d="M8 5a.5.5 0 0 1 .5.5v3.793l1.146-1.147a.5.5 0 0 1 .708.708l-2 2a.5.5 0 0 1-.708 0l-2-2a.5.5 0 1 1 .708-.708L7.5 9.293V5.5A.5.5 0 0 1 8 5z"/>
             <path d="M3 0h10a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2v-1h1v1a1 1 0 0 0 1 1h10a1 1 0 0 0 1-1V2a1 1 0 0 0-1-1H3a1 1 0 0 0-1 1v1H1V2a2 2 0 0 1 2-2z"/>
@@ -92,7 +92,7 @@
         </svg>
         Импортировать
     </div>
-    <div>
+    <div data-bs-toggle="modal" data-bs-target="#exportLogsModal">
         <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-journal-arrow-up" viewBox="0 0 16 16">
             <path fill-rule="evenodd" d="M8 11a.5.5 0 0 0 .5-.5V6.707l1.146 1.147a.5.5 0 0 0 .708-.708l-2-2a.5.5 0 0 0-.708 0l-2 2a.5.5 0 1 0 .708.708L7.5 6.707V10.5a.5.5 0 0 0 .5.5z"/>
             <path d="M3 0h10a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2v-1h1v1a1 1 0 0 0 1 1h10a1 1 0 0 0 1-1V2a1 1 0 0 0-1-1H3a1 1 0 0 0-1 1v1H1V2a2 2 0 0 1 2-2z"/>
@@ -267,9 +267,6 @@
                     <div class="mb-3">
                         <label for="nameInput" class="form-label">ФИО человека</label>
                         <input type="text" class="form-control" id="newNameInput" required>
-                        <div class="invalid-feedback">
-                            Пожалуйста, заполните это поле.
-                        </div>
                     </div>
                     <div class="mb-3">
                         <label for="tempInput" class="form-label">Температура</label>
@@ -283,6 +280,63 @@
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Отмена</button>
                     <button type="submit" class="btn btn-success" id="addLogModalBtn">Добавить</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+<div class="modal fade" id="importLogsModal" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content" style="background: var(--root-bg)">
+            <form id="importLogsForm" method="get">
+                <input type="hidden" name="date" value="{{date}}"/>
+                <div class="modal-body text-center py-5" id="importLogsModalBody">
+                    Выберите файл
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+<div class="modal fade" id="exportLogsModal" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content" style="background: var(--root-bg)">
+            <form id="exportLogsForm" method="get">
+                <input type="hidden" name="date" value="{{date}}"/>
+                <div id="exportLogsModalBody">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="exportLogsModalLabel">Экспорт записей.</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        <div>
+                            <label for="exportType" class="form-label">Экспорт в:</label>
+                            <select id="exportType" class="form-select form-select-lg mb-3" aria-label=".form-select-lg example">
+                                <option value="excel" selected>Excel</option>
+                                <option value="csv">csv</option>
+                            </select>
+                        </div>
+                        <label for="dateSection" class="form-label">Временные рамки</label>
+                        <div id="dateSection" class="btn-toolbar justify-content-center">
+                            <p class="mx-2">С <input type="date" value="{{date}}" id="startDate"> </p>
+                            <p class="mx-2">До <input type="date" value="{{date}}" id="endDate"> </p>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Отмена</button>
+                        <button type="button" class="btn btn-success" id="exportLogsModalBtn">Продолжить</button>
+                        <script type="text/javascript">
+                            document.getElementById('exportLogsModalBtn').onclick = function() {
+                                let exportType = document.getElementById('exportType').value;
+                                let startDate = document.getElementById('startDate').value;
+                                let endDate = document.getElementById('endDate').value;
+                                if (startDate > endDate) {
+                                    alert('Неверные временные рамки.');
+                                } else {
+                                    pywebview.api.export_logs(exportType, [startDate, endDate]);
+                                };
+                            };
+                        </script>
+                    </div>
                 </div>
             </form>
         </div>

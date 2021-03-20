@@ -3,7 +3,7 @@
 Работа с Excel.
 Импорт и экспорт данных.
 
-Обрабатываются таблицы вида:
+Обрабатываются листы вида:
 |   Журнал термометрии на <date>   |
 | ФИО           | Температура      |
 | <name>        | <temperature>    |
@@ -22,19 +22,20 @@ import openpyxl
 from openpyxl.styles import Font, Alignment
 
 from database import ThermometryLog, Float
+from logger import logger
 
-DB_PATH: str = ...  # Путь к базе данных
 
-
-def import_data(filename: str):
+def import_data(filename: str, db: ThermometryLog):
     """
-    Импортируем данные из файла Excel.
+    Импортируем данные из книги Excel.
     :param filename: Имя файла.
+    :param db: API для работы с базой данных.
     """
 
-    thermometry_log = ThermometryLog(DB_PATH)
-    workbook = openpyxl.load_workbook(filename)  # Открываем файл
+    logger.info('Загрузка книги.')
+    workbook = openpyxl.load_workbook(filename)  # Открываем книгу
 
+    logger.info('Импорт записей.')
     for sheet_name in workbook.sheetnames:
         try:
             date = datetime.strptime(sheet_name, '%d.%m.%Y')
@@ -56,26 +57,26 @@ def import_data(filename: str):
             except ValueError:
                 continue
 
-            thermometry_log.insert(
+            db.insert(
                 name=name,
                 temperature=Float(round(temperature, 1)),
                 date=date.strftime('%d.%m.%Y')
             )
 
 
-def export_data(filename: str, dates: List[str]):
+def export_data(filename: str, dates: List[str], db: ThermometryLog):
     """
-    Экспортируем данные в файл Excel.
+    Экспортируем данные в книгу Excel.
     :param filename: Имя файла.
     :param dates: Даты - названия страниц (в формате '%d.%m.%Y').
+    :param db: API для работы с базой данных.
     """
 
-    thermometry_log = ThermometryLog(DB_PATH)
     workbook = openpyxl.Workbook()  # Создаем файл
     workbook.remove(workbook['Sheet'])  # Удаляем начальный лист
 
     for date in dates:
-        data: List[ThermometryLog] = thermometry_log.filter(
+        data: List[ThermometryLog] = db.filter(
             return_list=True, date=date
         )
 
