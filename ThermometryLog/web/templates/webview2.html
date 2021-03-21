@@ -1,0 +1,26 @@
+{% extends 'base.html' %}
+
+{% block header_content %}
+<div style="display: inline-block;">
+    <h3 class="mx-4">WebView2 не установлен.</h3>
+    <div class="btn-toolbar" style="display: inline-flex;">
+        <button class="btn button btn-sm" type="button" style="margin-left: 1rem; margin-bottom: 1rem;" onclick="pywebview.api.open_url('/?date={{date}}')">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-caret-left-fill" viewBox="0 0 16 16">
+                <path d="M3.86 8.753l5.482 4.796c.646.566 1.658.106 1.658-.753V3.204a1 1 0 0 0-1.659-.753l-5.48 4.796a1 1 0 0 0 0 1.506z"/>
+            </svg>
+            Продолжить использовать приложение
+        </button>
+    </div>
+    {% block stats %}
+    {% endblock %}
+</div>
+{% endblock %}
+
+{% block body %}
+<div class="text-center">
+    На Вашем устройстве не установлен WebView2.
+    Пожалуйста переустановите приложение.
+    <br>
+    Без WebView2 некоторые функции приложения могу тне работать.
+</div>
+{% endblock %}

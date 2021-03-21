@@ -8,8 +8,10 @@
 """
 
 from datetime import datetime, timedelta
-from typing import NoReturn, Literal, Tuple
+from typing import NoReturn, Literal, Tuple, Union
 import json
+import subprocess
+import platform
 
 import webview
 from sqlite3_api import API
@@ -224,6 +226,38 @@ def change_color_scheme(color_scheme: Literal["default", "light", "dark"]):
     )  # Обновляем страницу
 
 
+def check_webview2() -> Union["True", "False"]:
+    """
+    Проверяет наличие WebView2.
+    :return: True or False.
+    """
+
+    def _cmd(request: str):
+        return (
+            subprocess.Popen(
+                request, text=True, stdout=subprocess.PIPE, encoding="cp866"
+            )
+            .stdout.read()
+            .strip()
+        )
+
+    if platform.architecture()[0] == "64bit":
+        webview2_status = _cmd(
+            "reg flags HKEY_LOCAL_MACHINE\SOFTWARE\WOW6432Node\Microsoft"
+            "\EdgeUpdate\Clients\{F3017226-FE2A-4295-8BDF-00C3A9A7E4C5}"
+        )
+    else:
+        webview2_status = _cmd(
+            "reg flags HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\
+            EdgeUpdate\Clients\{F3017226-FE2A-4295-8BDF-00C3A9A7E4C5}"
+        )
+
+    if webview2_status == "":
+        logger.info("WebView2 не найден.")
+        return False
+    return True
+
+
 def main() -> NoReturn:
     """ Запуск окна. """
 
@@ -241,6 +275,8 @@ def main() -> NoReturn:
 
     def _on_shown():
         logger.info("Окно развернуто.")
+        if not check_webview2():
+            js_api.open_url("/webview2")
 
     # Добавляем обработчики событий
     window.loaded += _on_loaded
@@ -248,7 +284,7 @@ def main() -> NoReturn:
     window.shown += _on_shown
 
     logger.info("Запуск окна.")
-    webview.start(_init, window, debug=True)
+    webview.start(_init, window)
 
 
 logger.info("Создание окна.")

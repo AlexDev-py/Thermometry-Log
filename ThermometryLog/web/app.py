@@ -145,3 +145,12 @@ def search():
         min_temp=min_temp,
         max_temp=max_temp,
     )
+
+
+@app.route("/webview2")
+def webview2():
+    """
+    Сообщает о том, что не найден WebView2
+    """
+
+    return render_template("webview2.html", color_scheme=settings["color_scheme"])
