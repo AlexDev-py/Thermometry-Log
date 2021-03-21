@@ -15,7 +15,7 @@ import cx_Freeze
 executables = [
     cx_Freeze.Executable(
         script=r"ThermometryLog\run.py",  # Запускаемый файл
-        # base='Win32GUI',  # Использует wpython.exe
+        base="Win32GUI",  # Использует pythonw.exe
         targetName="ThermometryLog.exe",  # Имя exe
         icon="icon.ico",
     )
