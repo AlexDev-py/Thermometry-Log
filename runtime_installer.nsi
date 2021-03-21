@@ -43,7 +43,7 @@ SetCompressor lzma
 ; MUI end ------
 
 Name "${PRODUCT_NAME}"
-OutFile "build\installers\ThermometryLogSetup.exe"
+OutFile "build\installers\ThermometryLogRuntimeSetup.exe"
 InstallDir "$PROGRAMFILES\Журнал термометрии"
 InstallDirRegKey HKLM "${PRODUCT_DIR_REGKEY}" ""
 ShowInstDetails show
@@ -51,9 +51,9 @@ ShowUnInstDetails show
 
 Section "WebView2" SEC02
   SetOutPath "$INSTDIR"
-  File "build\installers\MicrosoftEdgeWebview2Setup.exe"
-  ExecWait "$INSTDIR\MicrosoftEdgeWebview2Setup.exe"
-  Delete "$INSTDIR\MicrosoftEdgeWebview2Setup.exe"
+  File "build\installers\MicrosoftEdgeWebView2RuntimeInstallerX64.exe"
+  ExecWait "$INSTDIR\MicrosoftEdgeWebView2RuntimeInstallerX64.exe"
+  Delete "$INSTDIR\MicrosoftEdgeWebView2RuntimeInstallerX64.exe"
 SectionEnd
 
 Section "Журнал термометрии" SEC01
