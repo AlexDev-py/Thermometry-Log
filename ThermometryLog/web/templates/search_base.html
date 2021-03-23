@@ -62,7 +62,7 @@
                     </div>
                     <div class="mb-3">
                         <label for="tempInput" class="form-label">Температура</label>
-                        <input type="number" class="form-control" id="tempInput" step="0.1" required>
+                        <input type="number" class="form-control" id="tempInput" step="0.1" max="40" min="32" required>
                     </div>
                 </div>
                 <div class="modal-footer">
@@ -103,7 +103,11 @@
         let targetButton = event.relatedTarget;
         editForm.dataset.logId = targetButton.dataset.logId;
         nameInput.value = targetButton.dataset.name;
-        tempInput.value = targetButton.dataset.temp;
+        if (targetButton.dataset.temp > 0) {
+            tempInput.value = targetButton.dataset.temp;
+        } else {
+            tempInput.value = 36.6;
+        };
     });
     editForm.addEventListener('submit', function(event){
         let editModalBody = document.getElementById('editModalBody');

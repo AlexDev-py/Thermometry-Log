@@ -110,7 +110,10 @@ def search():
 
     logger.info("Получение записей.")
     logs = thermometry_log.filter(return_list=True)
-    names = set(log.name for log in logs)  # Всё ФИО
+    names = set()  # Всё Фамилии, Имена, Отчества
+    for log in logs:
+        for x in log.name.split():
+            names.add(x.lower())
     # Ищем наиболее похожие
     fuzz = difflib.get_close_matches(condition, names)
 
@@ -119,7 +122,10 @@ def search():
             log for log in logs if log.name.lower() == condition
         ],  # Результаты с полным совпадением по запросу
         other=[
-            log for log in logs if log.name in fuzz and log.name.lower() != condition
+            log
+            for log in logs
+            if any(x in log.name.lower() for x in fuzz)
+            and log.name.lower() != condition
         ],  # Похожие результаты
     )
 
