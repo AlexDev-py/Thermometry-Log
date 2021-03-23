@@ -79,7 +79,7 @@ cx_Freeze.setup(
         },
         "build": {"build_exe": "build\ThermometryLog"},  # Место назначения
     },
-    version="1.0.0",
+    version="1.1.0",
     description="Приложение для ведения журнала термометрии.",
     author="AlexDev",
     executables=executables,
