@@ -80,15 +80,20 @@ class JSApi:
             date,
         )
 
-    def import_logs(self):
+    def import_logs(self, date):
         """
         Импортируем записи.
+        :param date: Дата, на которую импортируется шаблон.
         """
 
         logger.info("Запрос на импортирование данных.")
         file = window.create_file_dialog(
             dialog_type=webview.OPEN_DIALOG,
-            file_types=("Excel file (*.xls;*.xlsx;*.xlsm)", "csv file (*.csv)"),
+            file_types=(
+                "All (*.xls;*.xlsx;*.xlsm;*.csv)",
+                "Excel file (*.xls;*.xlsx;*.xlsm)",
+                "csv file (*.csv)",
+            ),
         )  # Получаем путь к нужному файлу
 
         if file:
@@ -110,7 +115,7 @@ class JSApi:
             if file_type in ["xls", "xlsx", "xlsm"]:  # Excel файл
                 excel.import_data(file, self.thermometry_logs)
             else:
-                csv_handler.import_data(file, self.thermometry_logs)
+                csv_handler.import_data(file, self.thermometry_logs, date)
             logger.info("Импорт завершён.")
         else:
             logger.info("Файл не выбран.")
@@ -121,14 +126,17 @@ class JSApi:
         """
         )  # Обновляем страницу
 
-    def export_logs(self, file_type: Literal["excel", "csv"], dates: Tuple[str, str]):
+    def export_logs(
+        self, file_type: Literal["excel", "csv"], dates: Tuple[str, str], template: bool
+    ):
         """
         Экспорт записей в excel или csv.
         :param file_type: Куда импортируем.
         :param dates: Временные рамки (в формате '%Y-%m-%d').
+        :param template: Для True - необходимо экспортировать данные как шаблон.
         """
 
-        logger.info("Запрос на импортирование файлов.")
+        logger.info("Запрос на экспортирование файлов.")
         window.evaluate_js(
             """
         document.getElementById('exportLogsModalBody').innerHTML = `
@@ -146,8 +154,9 @@ class JSApi:
             for i in range((end_date - start_date).days + 1)
         ]  # Список дат, которые нужно экспортировать
 
-        save_filename = "Журнал термометрии {dates}{ft}".format(
+        save_filename = "Журнал термометрии {dates}{template}{ft}".format(
             dates=(dates[0] if dates[0] == dates[-1] else f"{dates[0]} - {dates[-1]}"),
+            template="(шаблон)" if file_type == "csv" and template else "",
             ft=".xlsx" if file_type == "excel" else ".csv",
         )  # Имя файла для сохранения
         file = window.create_file_dialog(
@@ -172,7 +181,7 @@ class JSApi:
             if file_type == "excel":
                 excel.export_data(file, dates, self.thermometry_logs)
             else:
-                csv_handler.export_data(file, dates, self.thermometry_logs)
+                csv_handler.export_data(file, dates, self.thermometry_logs, template)
             logger.info("Экспорт завершён.")
         else:
             logger.info("Файл не выбран.")

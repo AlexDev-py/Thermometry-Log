@@ -84,7 +84,7 @@
     </svg>
 </div>
 <div id="menu" class="p-3">
-    <div class="mb-1" data-bs-toggle="modal" data-bs-target="#importLogsModal" onclick="pywebview.api.import_logs();">
+    <div class="mb-1" data-bs-toggle="modal" data-bs-target="#importLogsModal" onclick="pywebview.api.import_logs('{{date}}');">
         <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-journal-arrow-down" viewBox="0 0 16 16">
             <path fill-rule="evenodd" d="M8 5a.5.5 0 0 1 .5.5v3.793l1.146-1.147a.5.5 0 0 1 .708.708l-2 2a.5.5 0 0 1-.708 0l-2-2a.5.5 0 1 1 .708-.708L7.5 9.293V5.5A.5.5 0 0 1 8 5z"/>
             <path d="M3 0h10a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2v-1h1v1a1 1 0 0 0 1 1h10a1 1 0 0 0 1-1V2a1 1 0 0 0-1-1H3a1 1 0 0 0-1 1v1H1V2a2 2 0 0 1 2-2z"/>
@@ -155,6 +155,14 @@
                 </td>
                 <td>{{log.name}}</td>
                 <td>
+                    {% if log.temperature == 0 %}
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-clipboard-x" viewBox="0 0 16 16">
+                        <path fill-rule="evenodd" d="M6.146 7.146a.5.5 0 0 1 .708 0L8 8.293l1.146-1.147a.5.5 0 1 1 .708.708L8.707 9l1.147 1.146a.5.5 0 0 1-.708.708L8 9.707l-1.146 1.147a.5.5 0 0 1-.708-.708L7.293 9 6.146 7.854a.5.5 0 0 1 0-.708z"/>
+                        <path d="M4 1.5H3a2 2 0 0 0-2 2V14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V3.5a2 2 0 0 0-2-2h-1v1h1a1 1 0 0 1 1 1V14a1 1 0 0 1-1 1H3a1 1 0 0 1-1-1V3.5a1 1 0 0 1 1-1h1v-1z"/>
+                        <path d="M9.5 1a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-3a.5.5 0 0 1-.5-.5v-1a.5.5 0 0 1 .5-.5h3zm-3-1A1.5 1.5 0 0 0 5 1.5v1A1.5 1.5 0 0 0 6.5 4h3A1.5 1.5 0 0 0 11 2.5v-1A1.5 1.5 0 0 0 9.5 0h-3z"/>
+                    </svg>
+                    Нет данных
+                    {% else %}
                     {% if log.temperature <= 36 %}
                     <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-thermometer-low" viewBox="0 0 16 16">
                         <path d="M9.5 12.5a1.5 1.5 0 1 1-2-1.415V9.5a.5.5 0 0 1 1 0v1.585a1.5 1.5 0 0 1 1 1.415z"/>
@@ -182,6 +190,7 @@
                              aria-valuenow="{{(log.temperature - 30) * 10}}" aria-valuemin="32" aria-valuemax="40">
                         </div>
                     </div>
+                    {% endif %}
                 </td>
             </tr>
             {% endfor %}
@@ -243,7 +252,7 @@
                     </div>
                     <div class="mb-3">
                         <label for="tempInput" class="form-label">Температура</label>
-                        <input type="number" class="form-control" id="tempInput" step="0.1" required>
+                        <input type="number" class="form-control" id="tempInput" step="0.1" max="40" min="32" required>
                     </div>
                 </div>
                 <div class="modal-footer">
@@ -271,7 +280,7 @@
                     </div>
                     <div class="mb-3">
                         <label for="tempInput" class="form-label">Температура</label>
-                        <input type="number" class="form-control" id="newTempInput" value="36.6" step="0.1" required>
+                        <input type="number" class="form-control" id="newTempInput" value="36.6" step="0.1" max="40" min="32" required>
                     </div>
                     <div class="mb-3">
                         <label for="tempInput" class="form-label">Дата</label>
@@ -315,13 +324,26 @@
                                 <option value="excel" selected>Excel</option>
                                 <option value="csv">csv</option>
                             </select>
+                            <label for="dateSection" class="form-label">Временные рамки</label>
+                            <div id="dateSection" class="btn-toolbar justify-content-center">
+                                <p class="mx-2">С <input type="date" value="{{date}}" id="startDate"> </p>
+                                <p class="mx-2">До <input type="date" value="{{date}}" id="endDate"> </p>
+                            </div>
+                            <div class="mt-3 form-check" style="display: none;" id="isTemplateDiv">
+                                <input type="checkbox" class="form-check-input" id="isTemplate">
+                                <label class="form-check-label" for="isTemplate">Экспортировать как шаблон</label>
+                            </div>
+                            <script type="text/javascript">
+                                document.getElementById('exportType').onchange = function() {
+                                    if (this.value == 'csv') {
+                                        document.getElementById('isTemplateDiv').style.display = 'block';
+                                    } else {
+                                        document.getElementById('isTemplateDiv').style.display = 'none';
+                                    };
+                                };
+                            </script>
                         </div>
-                        <label for="dateSection" class="form-label">Временные рамки</label>
-                        <div id="dateSection" class="btn-toolbar justify-content-center">
-                            <p class="mx-2">С <input type="date" value="{{date}}" id="startDate"> </p>
-                            <p class="mx-2">До <input type="date" value="{{date}}" id="endDate"> </p>
                         </div>
-                    </div>
                     <div class="modal-footer">
                         <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Отмена</button>
                         <button type="button" class="btn btn-success" id="exportLogsModalBtn">Продолжить</button>
@@ -330,10 +352,11 @@
                                 let exportType = document.getElementById('exportType').value;
                                 let startDate = document.getElementById('startDate').value;
                                 let endDate = document.getElementById('endDate').value;
+                                let isTemplate = document.getElementById('isTemplate').checked;
                                 if (startDate > endDate) {
                                     alert('Неверные временные рамки.');
                                 } else {
-                                    pywebview.api.export_logs(exportType, [startDate, endDate]);
+                                    pywebview.api.export_logs(exportType, [startDate, endDate], isTemplate);
                                 };
                             };
                         </script>
@@ -372,7 +395,11 @@
         let targetButton = event.relatedTarget;
         editForm.dataset.logId = targetButton.dataset.logId;
         nameInput.value = targetButton.dataset.name;
-        tempInput.value = targetButton.dataset.temp;
+        if (targetButton.dataset.temp > 0) {
+            tempInput.value = targetButton.dataset.temp;
+        } else {
+            tempInput.value = 36.6;
+        };
     });
     editForm.addEventListener('submit', function(event){
         let editModalBody = document.getElementById('editModalBody');

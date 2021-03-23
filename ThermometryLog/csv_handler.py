@@ -19,23 +19,26 @@ from database import ThermometryLog, Float
 from logger import logger
 
 
-def import_data(filename: str, database: ThermometryLog):
+def import_data(filename: str, database: ThermometryLog, date: str):
     """
     Импортируем данные из csv файла.
     :param filename: Имя файла.
     :param database: API для работы с базой данных.
+    :param date: Дата, на которую импортируется шаблон (В формате '%Y-%m-%d').
     """
 
     logger.info("Импорт записей.")
-    with open(filename, encoding="utf-8") as csv_file:
+    date = datetime.strptime(date, "%Y-%m-%d")
+    with open(filename, encoding="utf-8-sig") as csv_file:
         reader = csv.reader(csv_file)
         for row in reader:
             # Валидация полей
             if len(name := row[1]) == 0:
                 continue
             try:
-                date = datetime.strptime(row[0], "%d.%m.%Y")
-                temperature = float(row[2])
+                if row[0] != "<TODAY>":  # Замена шаблона
+                    date = datetime.strptime(row[0], "%d.%m.%Y")
+                temperature = 0 if row[2] == "<NONE>" else float(row[2])
             except ValueError:
                 continue
 
@@ -46,12 +49,15 @@ def import_data(filename: str, database: ThermometryLog):
             )
 
 
-def export_data(filename: str, dates: List[str], database: ThermometryLog):
+def export_data(
+    filename: str, dates: List[str], database: ThermometryLog, template=False
+):
     """
     Экспортируем данные в csv файл.
     :param filename: Имя файла.
     :param dates: Даты, которые нужно экспортировать (в формате '%d.%m.%Y').
     :param database: API для работы с базой данных.
+    :param template: Для True - необходимо экспортировать данные как шаблон.
     """
 
     logger.info("Заполнение файла.")
@@ -60,5 +66,10 @@ def export_data(filename: str, dates: List[str], database: ThermometryLog):
         for date in dates:
             data: List[ThermometryLog] = database.filter(return_list=True, date=date)
             if len(data):
+                if template:
+                    data.sort(key=lambda x: x.name)
                 for obj in data:
-                    writer.writerow([obj.date, obj.name, obj.temperature])
+                    if template:
+                        writer.writerow(["<TODAY>", obj.name, "<NONE>"])
+                    else:
+                        writer.writerow([obj.date, obj.name, obj.temperature])
