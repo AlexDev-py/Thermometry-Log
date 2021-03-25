@@ -48,7 +48,7 @@
 
 Для разработчиков
 ----
-_P.S.: Для запуска проекта необходим Python 3.8+_
+_P.S.: Для запуска проекта необходим Python 3.8+ и Microsoft Edge [WebView2](https://developer.microsoft.com/en-us/microsoft-edge/webview2/#download-section)_ 
 
 Вы можете скачать исходники проекта с помощью git.
 ```commandline

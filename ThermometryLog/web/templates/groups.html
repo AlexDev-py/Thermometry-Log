@@ -1,0 +1,178 @@
+{% extends 'base.html' %}
+
+{% block header_content %}
+<div style="display: inline-block;">
+    <h3 class="mx-4">Настройки групп</h3>
+    <div class="btn-toolbar" style="display: inline-flex;">
+        <button class="btn button btn-sm" type="button" style="margin-left: 1rem; margin-bottom: 1rem;" onclick="pywebview.api.open_url('/?date={{date}}')">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-caret-left-fill" viewBox="0 0 16 16">
+                <path d="M3.86 8.753l5.482 4.796c.646.566 1.658.106 1.658-.753V3.204a1 1 0 0 0-1.659-.753l-5.48 4.796a1 1 0 0 0 0 1.506z"/>
+            </svg>
+            Вернуться
+        </button>
+        <button class="btn button btn-sm" type="button" style="margin-left: 1rem; margin-bottom: 1rem;" data-bs-toggle="modal" data-bs-target="#addGroupModal">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-plus-circle-fill" viewBox="0 0 16 16">
+                <path d="M16 8A8 8 0 1 1 0 8a8 8 0 0 1 16 0zM8.5 4.5a.5.5 0 0 0-1 0v3h-3a.5.5 0 0 0 0 1h3v3a.5.5 0 0 0 1 0v-3h3a.5.5 0 0 0 0-1h-3v-3z"/>
+            </svg>
+            Создать группу
+        </button>
+    </div>
+    {% block stats %}
+    {% endblock %}
+</div>
+{% endblock %}
+
+{% block body %}
+<table class="table table-hover">
+    <thead>
+        <tr>
+            <th scope="col"><strong>Группа</strong></th>
+            <th scope="col"><strong>Шаблон</strong></th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for group_name in groups %}
+        <tr>
+            <td>
+                <div class="btn-group">
+                    {% if group_name != 'Общая' %}
+                    <button type="button" class="btn btn-sm btn-outline" data-group="{{group_name}}" data-bs-toggle="modal" data-bs-target="#deleteGroupModal">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-trash2-fill" viewBox="0 0 16 16">
+                            <path d="M2.037 3.225A.703.703 0 0 1 2 3c0-1.105 2.686-2 6-2s6 .895 6 2a.702.702 0 0 1-.037.225l-1.684 10.104A2 2 0 0 1 10.305 15H5.694a2 2 0 0 1-1.973-1.671L2.037 3.225zm9.89-.69C10.966 2.214 9.578 2 8 2c-1.58 0-2.968.215-3.926.534-.477.16-.795.327-.975.466.18.14.498.307.975.466C5.032 3.786 6.42 4 8 4s2.967-.215 3.926-.534c.477-.16.795-.327.975-.466-.18-.14-.498-.307-.975-.466z"/>
+                        </svg>
+                    </button>
+                    <button type="button" class="btn btn-sm btn-outline" data-group="{{group_name}}" data-bs-toggle="modal" data-bs-target="#editGroupModal">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-pencil-fill" viewBox="0 0 16 16">
+                            <path d="M12.854.146a.5.5 0 0 0-.707 0L10.5 1.793 14.207 5.5l1.647-1.646a.5.5 0 0 0 0-.708l-3-3zm.646 6.061L9.793 2.5 3.293 9H3.5a.5.5 0 0 1 .5.5v.5h.5a.5.5 0 0 1 .5.5v.5h.5a.5.5 0 0 1 .5.5v.5h.5a.5.5 0 0 1 .5.5v.207l6.5-6.5zm-7.468 7.468A.5.5 0 0 1 6 13.5V13h-.5a.5.5 0 0 1-.5-.5V12h-.5a.5.5 0 0 1-.5-.5V11h-.5a.5.5 0 0 1-.5-.5V10h-.5a.499.499 0 0 1-.175-.032l-.179.178a.5.5 0 0 0-.11.168l-2 5a.5.5 0 0 0 .65.65l5-2a.5.5 0 0 0 .168-.11l.178-.178z"/>
+                        </svg>
+                    </button>
+                    {% endif %}
+                    <button type="button" class="btn btn-sm btn-outline" onclick="pywebview.api.open_url('?group={{group_name}}&date={{date}}')">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-caret-right-fill" viewBox="0 0 16 16">
+                            <path d="M12.14 8.753l-5.482 4.796c-.646.566-1.658.106-1.658-.753V3.204a1 1 0 0 1 1.659-.753l5.48 4.796a1 1 0 0 1 0 1.506z"/>
+                        </svg>
+                        Перейти
+                    </button>
+                </div>
+                {{group_name}}
+            </td>
+            <td>
+                {% if groups[group_name]['template'] %}
+                {{groups[group_name]['template'].split('\\')[-1]}}
+                {% else %}
+                Шаблон не задан
+                {% endif %}
+            </td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+<div class="modal fade" id="deleteGroupModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content" style="background: var(--root-bg)">
+            <form id="deleteForm" method="get">
+                <input type="hidden" name="date" value="{{date}}"/>
+                <div id="deleteModalBody">
+                    <div class="modal-header">
+                        <h5 class="modal-title">Удалить группу?</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        Группу будет не возможно восстановить.<br>
+                        Все записи, относящиеся к группе, будут удалены.
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-success" data-bs-dismiss="modal">Отмена</button>
+                        <button type="button" class="btn btn-danger" id="deleteGroupModalBtn" data-group="">Удалить</button>
+                         <script type="text/javascript">
+                            document.getElementById('deleteGroupModalBtn').onclick = function() {
+                                pywebview.api.delete_group(this.dataset.group);
+                            };
+                        </script>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+<script type="text/javascript">
+    let deleteGroupModal = document.getElementById('deleteGroupModal');
+    let deleteGroupModalBtn = document.getElementById('deleteGroupModalBtn');
+    deleteGroupModal.addEventListener('show.bs.modal', function (event) {
+        let targetButton = event.relatedTarget;
+        deleteGroupModalBtn.dataset.group = targetButton.dataset.group;
+    });
+</script>
+<div class="modal fade" id="editGroupModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content" style="background: var(--root-bg)">
+            <form id="editForm" method="get">
+                <input type="hidden" name="date" value="{{date}}"/>
+                <div id="editModalBody">
+                    <div class="modal-header">
+                        <h5 class="modal-title">Редактирование группы</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="mb-3">
+                            <label for="groupInput" class="form-label">Название группы</label>
+                            <input type="text" class="form-control" id="groupInput" required>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Отмена</button>
+                        <button type="button" class="btn btn-success" id="editGroupModalBtn" data-group="">Сохранить</button>
+                        <script type="text/javascript">
+                            document.getElementById('editGroupModalBtn').onclick = function() {
+                                let groupInput = document.getElementById('groupInput').value;
+                                pywebview.api.edit_group(this.dataset.group, groupInput);
+                            };
+                        </script>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+<script type="text/javascript">
+    let editGroupModal = document.getElementById('editGroupModal');
+    let editGroupModalBtn = document.getElementById('editGroupModalBtn');
+    let groupInput = document.getElementById('groupInput')
+    editGroupModal.addEventListener('show.bs.modal', function (event) {
+        let targetButton = event.relatedTarget;
+        editGroupModalBtn.dataset.group = targetButton.dataset.group;
+        groupInput.value = targetButton.dataset.group;
+    });
+</script>
+<div class="modal fade" id="addGroupModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content" style="background: var(--root-bg)">
+            <form id="addForm" method="get">
+                <input type="hidden" name="date" value="{{date}}"/>
+                <div id="addModalBody">
+                    <div class="modal-header">
+                        <h5 class="modal-title">Создание новой группы</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="mb-3">
+                            <label for="newGroupInput" class="form-label">Название группы</label>
+                            <input type="text" class="form-control" id="newGroupInput" required>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Отмена</button>
+                        <button type="button" class="btn btn-success" id="addGroupModalBtn">Создать</button>
+                        <script type="text/javascript">
+                            document.getElementById('addGroupModalBtn').onclick = function() {
+                                let newGroupInput = document.getElementById('newGroupInput').value;
+                                pywebview.api.add_group(newGroupInput);
+                            };
+                        </script>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

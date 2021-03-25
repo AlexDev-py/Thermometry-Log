@@ -12,12 +12,15 @@ from datetime import datetime
 from typing import List
 
 from flask import Flask, render_template, request
+from webview import Window
 
-from database import ThermometryLog, Float
+from database import ThermometryLog, Float, Groups
 from logger import logger, LOCAL_APPDATA
+import csv_handler
 
 logger.info("Создание веб-приложения.")
 DB_PATH: str = ...  # Путь к базе данных
+WINDOW: Window = ...  # Окно приложения
 
 # Настройка окружения. (При сборке приложения)
 ROOT = os.path.abspath(__file__)
@@ -41,11 +44,14 @@ else:
     with open(SETTINGS_FILE) as settings_file:
         settings = json.load(settings_file)
 del settings_file
+groups = Groups()
 
 
 @app.route("/")
 def home():
-    """ Главная """
+    """
+    Главная
+    """
 
     logger.info("Запрос на главную страницу с параметрами %s.", dict(request.args))
 
@@ -53,11 +59,31 @@ def home():
     if request.args.get("date"):
         date = datetime.strptime(request.args.get("date"), "%Y-%m-%d")
 
+    group_name = request.args.get("group") or "Общая"
+    group = groups.get()[group_name]
+    WINDOW.set_title(f"Журнал термометрии - Группа: {group_name}")
+
     logger.info("Получение записей.")
-    logs: List[ThermometryLog] = ThermometryLog(DB_PATH).filter(
+    thermometry_log = ThermometryLog(DB_PATH)
+    logs: List[ThermometryLog] = thermometry_log.filter(
         date=date.strftime("%d.%m.%Y"),
         return_list=True,
+        **({} if group["id"] == 0 else {"grp": group["id"]}),
     )
+
+    if len(logs) == 0 and group["template"]:
+        if date.strftime("%d.%m.%Y") == datetime.now().strftime("%d.%m.%Y"):
+            csv_handler.import_data(
+                group["template"],
+                thermometry_log,
+                date.strftime("%Y-%m-%d"),
+                group["id"],
+            )
+            logs = thermometry_log.filter(
+                date=date.strftime("%d.%m.%Y"),
+                return_list=True,
+                **({} if group == 0 else {"grp": group["id"]}),
+            )
 
     if len(logs):
         average_temp = round(sum(map(lambda log: log.temperature, logs)) / len(logs), 1)
@@ -76,6 +102,7 @@ def home():
         max_temp=max_temp,
         date=date.strftime("%Y-%m-%d"),
         now_date=datetime.now().strftime("%Y-%m-%d"),
+        group=group_name,
     )
 
 
@@ -99,7 +126,7 @@ def search():
         logger.info("Получение записей.")
         condition: float = Float(round(float(condition.replace(",", ".")), 1))
         results = thermometry_log.filter(temperature=condition, return_list=True)
-        results.sort(key=lambda log: log.date, reverse=True)
+        results.sort(key=lambda lg: lg.date, reverse=True)
         logger.info("Отправка ответа.")
         return render_template(
             "search_temp.html",
@@ -131,12 +158,12 @@ def search():
 
     if len(result["fullmatch"]):
         average_temp = round(
-            sum(map(lambda log: log.temperature, result["fullmatch"]))
+            sum(map(lambda lg: lg.temperature, result["fullmatch"]))
             / len(result["fullmatch"]),
             1,
         )
-        min_temp = min(result["fullmatch"], key=lambda x: x.temperature).temperature
-        max_temp = max(result["fullmatch"], key=lambda x: x.temperature).temperature
+        min_temp = min(result["fullmatch"], key=lambda lg: lg.temperature).temperature
+        max_temp = max(result["fullmatch"], key=lambda lg: lg.temperature).temperature
     else:
         average_temp = min_temp = max_temp = 0
 
@@ -150,6 +177,20 @@ def search():
         average_temp=average_temp,
         min_temp=min_temp,
         max_temp=max_temp,
+    )
+
+
+@app.route("/groups")
+def groups_view():
+    """
+    Страница выбора группы.
+    """
+
+    return render_template(
+        "groups.html",
+        color_scheme=settings["color_scheme"],
+        date=request.args.get("date"),
+        groups=groups.get(),
     )
 
 

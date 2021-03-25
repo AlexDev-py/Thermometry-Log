@@ -16,7 +16,7 @@
 """
 
 from datetime import datetime
-from typing import List
+from typing import List, Tuple
 
 import openpyxl
 from openpyxl.styles import Font, Alignment
@@ -25,11 +25,12 @@ from database import ThermometryLog, Float
 from logger import logger
 
 
-def import_data(filename: str, database: ThermometryLog):
+def import_data(filename: str, database: ThermometryLog, group: int = 0):
     """
     Импортируем данные из книги Excel.
     :param filename: Имя файла.
     :param database: API для работы с базой данных.
+    :param group: Группа, в которую импортируем данные.
     """
 
     logger.info("Загрузка книги.")
@@ -62,15 +63,22 @@ def import_data(filename: str, database: ThermometryLog):
                 name=name,
                 temperature=Float(round(temperature, 1)),
                 date=date.strftime("%d.%m.%Y"),
+                grp=group,
             )
 
 
-def export_data(filename: str, dates: List[str], database: ThermometryLog):
+def export_data(
+    filename: str,
+    dates: List[str],
+    database: ThermometryLog,
+    group: Tuple[int, str] = (0, "Общая"),
+):
     """
     Экспортируем данные в книгу Excel.
     :param filename: Имя файла.
     :param dates: Даты - названия страниц (в формате '%d.%m.%Y').
     :param database: API для работы с базой данных.
+    :param group: Информация о группе. (<ID>, <название>)
     """
 
     logger.info("Создание книги.")
@@ -79,19 +87,23 @@ def export_data(filename: str, dates: List[str], database: ThermometryLog):
 
     logger.info("Заполнение книги.")
     for date in dates:
-        data: List[ThermometryLog] = database.filter(return_list=True, date=date)
+        data: List[ThermometryLog] = database.filter(
+            return_list=True,
+            date=date,
+            **({} if group[0] == 0 else {"grp": group[0]}),
+        )
 
         if len(data) == 0:
             continue
 
         sheet = workbook.create_sheet(date)  # Новый лист
         # Размер колонок
-        sheet.column_dimensions["A"].width = 18
-        sheet.column_dimensions["B"].width = 18
+        sheet.column_dimensions["A"].width = 28
+        sheet.column_dimensions["B"].width = 28
         # Объединяем ячейки A1 и B1
         sheet.merge_cells("A1:B1")
         # Заполняем ячейки
-        sheet["A1"] = f"Журнал термометрии на {date}"
+        sheet["A1"] = f"Журнал термометрии на {date} в группе `{group[1]}`"
         sheet["A1"].font = Font(bold=True)
         sheet["A1"].alignment = Alignment(horizontal="center")
         sheet.append(["ФИО", "Температура"])

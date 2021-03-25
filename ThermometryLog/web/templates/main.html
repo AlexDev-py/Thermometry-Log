@@ -17,7 +17,7 @@
                 };
                 date.addEventListener("blur", function(){
                     if(isChanged())
-                        pywebview.api.open_url('?date=' + olddate)
+                        pywebview.api.open_url('?group={{group}}&date=' + olddate)
                 });
             </script>
         </form>
@@ -84,7 +84,7 @@
     </svg>
 </div>
 <div id="menu" class="p-3">
-    <div class="mb-1" data-bs-toggle="modal" data-bs-target="#importLogsModal" onclick="pywebview.api.import_logs('{{date}}');">
+    <div class="mb-1" data-bs-toggle="modal" data-bs-target="#importLogsModal" onclick="pywebview.api.import_logs('{{date}}', '{{group}}');">
         <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-journal-arrow-down" viewBox="0 0 16 16">
             <path fill-rule="evenodd" d="M8 5a.5.5 0 0 1 .5.5v3.793l1.146-1.147a.5.5 0 0 1 .708.708l-2 2a.5.5 0 0 1-.708 0l-2-2a.5.5 0 1 1 .708-.708L7.5 9.293V5.5A.5.5 0 0 1 8 5z"/>
             <path d="M3 0h10a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2v-1h1v1a1 1 0 0 0 1 1h10a1 1 0 0 0 1-1V2a1 1 0 0 0-1-1H3a1 1 0 0 0-1 1v1H1V2a2 2 0 0 1 2-2z"/>
@@ -99,6 +99,15 @@
             <path d="M1 5v-.5a.5.5 0 0 1 1 0V5h.5a.5.5 0 0 1 0 1h-2a.5.5 0 0 1 0-1H1zm0 3v-.5a.5.5 0 0 1 1 0V8h.5a.5.5 0 0 1 0 1h-2a.5.5 0 0 1 0-1H1zm0 3v-.5a.5.5 0 0 1 1 0v.5h.5a.5.5 0 0 1 0 1h-2a.5.5 0 0 1 0-1H1z"/>
         </svg>
         Экспортировать
+    </div>
+    <hr>
+    <div onclick="pywebview.api.open_url('/groups?date={{date}}')">
+        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-people-fill" viewBox="0 0 16 16">
+            <path d="M7 14s-1 0-1-1 1-4 5-4 5 3 5 4-1 1-1 1H7zm4-6a3 3 0 1 0 0-6 3 3 0 0 0 0 6z"/>
+            <path fill-rule="evenodd" d="M5.216 14A2.238 2.238 0 0 1 5 13c0-1.355.68-2.75 1.936-3.72A6.325 6.325 0 0 0 5 9c-4 0-5 3-5 4s1 1 1 1h4.216z"/>
+            <path d="M4.5 8a2.5 2.5 0 1 0 0-5 2.5 2.5 0 0 0 0 5z"/>
+        </svg>
+        Сменить группу
     </div>
     <hr>
     <div data-bs-toggle="modal" data-bs-target="#colorSchemeModal">
@@ -207,7 +216,7 @@
         </h1>
         <div class="d-grid gap-2 col-6 mx-auto">
             {% if date != now_date %}
-            <button type="button" class="btn button" onclick="pywebview.api.open_url('')">Перейти к сегодняшнему числу</button>
+            <button type="button" class="btn button" onclick="pywebview.api.open_url('?group={{group}}')">Перейти к сегодняшнему числу</button>
             {% endif %}
             <button class="btn button" type="button" data-bs-toggle="modal" data-bs-target="#addLogModal">Добавить запись</button>
         </div>
@@ -218,90 +227,143 @@
 <div class="modal fade" id="deleteLogModal" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content" style="background: var(--root-bg)">
-            <div class="modal-header">
-                <h5 class="modal-title" id="deleteLogModalLabel">Удалить запись?</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-            </div>
-            <div class="modal-body" id="deleteModalBody">
-                Запись будет не возможно восстановить.
-            </div>
-            <div class="modal-footer">
-                <form id="deleteForm" data-log-id="" method="get">
-                    <input type="hidden" name="date" value="{{date}}"/>
-                    <button type="button" class="btn btn-success" data-bs-dismiss="modal">Отмена</button>
-                    <button type="submit" class="btn btn-danger" id="deleteLogModalBtn">Удалить
-                    </button>
-                </form>
-            </div>
+            <form id="deleteForm" method="get">
+                <input type="hidden" name="date" value="{{date}}"/>
+                <input type="hidden" name="group" value="{{group}}"/>
+                <div id="deleteModalBody">
+                    <div class="modal-header">
+                        <h5 class="modal-title">Удалить запись?</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        Запись будет не возможно восстановить.
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-success" data-bs-dismiss="modal">Отмена</button>
+                        <button type="button" class="btn btn-danger" id="deleteLogModalBtn" data-log-id="">Удалить</button>
+                        <script type="text/javascript">
+                            document.getElementById('deleteLogModalBtn').onclick = function() {
+                                pywebview.api.delete_log(this.dataset.logId)
+                            };
+                        </script>
+                    </div>
+                </div>
+            </form>
         </div>
     </div>
 </div>
+<script type="text/javascript">
+    let deleteLogModal = document.getElementById('deleteLogModal');
+    let deleteLogModalBtn = document.getElementById('deleteLogModalBtn');
+    deleteLogModal.addEventListener('show.bs.modal', function (event) {
+        let targetButton = event.relatedTarget;
+        deleteLogModalBtn.dataset.logId = targetButton.dataset.logId;
+    });
+</script>
 <div class="modal fade" id="editLogModal" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content" style="background: var(--root-bg)">
-            <div class="modal-header">
-                <h5 class="modal-title" id="editLogModalLabel">Редактирование записи</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-            </div>
-            <form id="editForm" data-log-id="" onsubmit="" method="get">
+            <form id="editForm" method="get">
                 <input type="hidden" name="date" value="{{date}}"/>
-                <div class="modal-body" id="editModalBody">
-                    <div class="mb-3">
-                        <label for="nameInput" class="form-label">ФИО человека</label>
-                        <input type="text" class="form-control" id="nameInput" required>
+                <input type="hidden" name="group" value="{{group}}"/>
+                <div id="editModalBody">
+                    <div class="modal-header">
+                        <h5 class="modal-title">Редактирование записи</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                     </div>
-                    <div class="mb-3">
-                        <label for="tempInput" class="form-label">Температура</label>
-                        <input type="number" class="form-control" id="tempInput" step="0.1" max="40" min="32" required>
+                    <div class="modal-body">
+                        <div class="mb-3">
+                            <label for="nameInput" class="form-label">ФИО человека</label>
+                            <input type="text" class="form-control" id="nameInput" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="tempInput" class="form-label">Температура</label>
+                            <input type="number" class="form-control" id="tempInput" step="0.1" max="40" min="32" required>
+                        </div>
                     </div>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Отмена</button>
-                    <button type="submit" class="btn btn-success" id="editLogModalBtn">Сохранить
-                    </button>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Отмена</button>
+                        <button type="button" class="btn btn-success" id="editLogModalBtn" data-log-id="">Сохранить</button>
+                        <script type="text/javascript">
+                            document.getElementById('editLogModalBtn').onclick = function() {
+                                let nameInput = document.getElementById('nameInput');
+                                let tempInput = document.getElementById('tempInput');
+                                pywebview.api.edit_log(this.dataset.logId, nameInput.value, tempInput.value)
+                            };
+                        </script>
+                    </div>
                 </div>
             </form>
         </div>
     </div>
 </div>
+<script type="text/javascript">
+    let editLogModal = document.getElementById('editLogModal');
+    let editLogModalBtn = document.getElementById('editLogModalBtn');
+    editLogModal.addEventListener('show.bs.modal', function (event) {
+        let targetButton = event.relatedTarget;
+        editLogModalBtn.dataset.logId = targetButton.dataset.logId;
+        nameInput.value = targetButton.dataset.name;
+        if (targetButton.dataset.temp > 0) {
+            tempInput.value = targetButton.dataset.temp;
+        } else {
+            tempInput.value = 36.6;
+        };
+    });
+</script>
 <div class="modal fade" id="addLogModal" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content" style="background: var(--root-bg)">
-            <div class="modal-header">
-                <h5 class="modal-title" id="addLogModalLabel">Создание новой записи</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-            </div>
             <form id="addForm" method="get">
                 <input type="hidden" name="date" value="{{date}}"/>
-                <div class="modal-body" id="addModalBody">
-                    <div class="mb-3">
-                        <label for="nameInput" class="form-label">ФИО человека</label>
-                        <input type="text" class="form-control" id="newNameInput" required>
+                <input type="hidden" name="group" value="{{group}}"/>
+                <div id="addModalBody">
+                    <div class="modal-header">
+                        <h5 class="modal-title">Создание новой записи</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                     </div>
-                    <div class="mb-3">
-                        <label for="tempInput" class="form-label">Температура</label>
-                        <input type="number" class="form-control" id="newTempInput" value="36.6" step="0.1" max="40" min="32" required>
+                    <div class="modal-body">
+                        <div class="mb-3">
+                            <label for="newNameInput" class="form-label">ФИО человека</label>
+                            <input type="text" class="form-control" id="newNameInput" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="newTempInput" class="form-label">Температура</label>
+                            <input type="number" class="form-control" id="newTempInput" value="36.6" step="0.1" max="40" min="32" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="newDateInput" class="form-label">Дата</label>
+                            <input type="date" class="form-control" id="newDateInput" value="{{date}}" required>
+                        </div>
                     </div>
-                    <div class="mb-3">
-                        <label for="tempInput" class="form-label">Дата</label>
-                        <input type="date" class="form-control" id="newDateInput" value="{{date}}" required>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Отмена</button>
+                        <button type="button" class="btn btn-success" id="addLogModalBtn">Добавить</button>
+                        <script type="text/javascript">
+                            document.getElementById('addLogModalBtn').onclick = function() {
+                                let newNameInput = document.getElementById('newNameInput');
+                                let newTempInput = document.getElementById('newTempInput');
+                                let newDateInput = document.getElementById('newDateInput');
+                                pywebview.api.add_log(newNameInput.value, newTempInput.value, newDateInput.value, '{{group}}');
+                            };
+                        </script>
                     </div>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Отмена</button>
-                    <button type="submit" class="btn btn-success" id="addLogModalBtn">Добавить</button>
                 </div>
             </form>
         </div>
     </div>
 </div>
+
 <div class="modal fade" id="importLogsModal" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content" style="background: var(--root-bg)">
             <form id="importLogsForm" method="get">
                 <input type="hidden" name="date" value="{{date}}"/>
-                <div class="modal-body text-center py-5" id="importLogsModalBody">
-                    Выберите файл
+                <input type="hidden" name="group" value="{{group}}"/>
+                <div class="modal-body text-center" id="importLogsModalBody">
+                    <div class="py-5">
+                        Выберите файл
+                    </div>
                 </div>
             </form>
         </div>
@@ -312,9 +374,10 @@
         <div class="modal-content" style="background: var(--root-bg)">
             <form id="exportLogsForm" method="get">
                 <input type="hidden" name="date" value="{{date}}"/>
+                <input type="hidden" name="group" value="{{group}}"/>
                 <div id="exportLogsModalBody">
                     <div class="modal-header">
-                        <h5 class="modal-title" id="exportLogsModalLabel">Экспорт записей.</h5>
+                        <h5 class="modal-title">Экспорт записей.</h5>
                         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                     </div>
                     <div class="modal-body">
@@ -343,7 +406,7 @@
                                 };
                             </script>
                         </div>
-                        </div>
+                    </div>
                     <div class="modal-footer">
                         <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Отмена</button>
                         <button type="button" class="btn btn-success" id="exportLogsModalBtn">Продолжить</button>
@@ -356,7 +419,7 @@
                                 if (startDate > endDate) {
                                     alert('Неверные временные рамки.');
                                 } else {
-                                    pywebview.api.export_logs(exportType, [startDate, endDate], isTemplate);
+                                    pywebview.api.export_logs(exportType, [startDate, endDate], '{{group}}', isTemplate);
                                 };
                             };
                         </script>
@@ -366,78 +429,13 @@
         </div>
     </div>
 </div>
-<script type="text/javascript">
-    let deleteLogModal = document.getElementById('deleteLogModal');
-    let deleteForm = document.getElementById('deleteForm');
-    deleteLogModal.addEventListener('show.bs.modal', function (event) {
-        let targetButton = event.relatedTarget;
-        deleteForm.dataset.logId = targetButton.dataset.logId;
-    });
-    deleteForm.addEventListener('submit', function(event){
-        let deleteModalBody = document.getElementById('deleteModalBody');
-        let html = `
-        <div class="d-flex justify-content-center" style="margin: 25% 25% 25% 25%;">
-            <div class="spinner-border" role="status">
-                <span class="visually-hidden">Loading...</span>
-            </div>
-        </div>
-        `;
-        deleteModalBody.innerHTML = html;
-        pywebview.api.delete_log(this.dataset.logId);
-    });
-</script>
-<script type="text/javascript">
-    let editLogModal = document.getElementById('editLogModal');
-    let editForm = document.getElementById('editForm');
-    let nameInput = document.getElementById('nameInput');
-    let tempInput = document.getElementById('tempInput');
-    editLogModal.addEventListener('show.bs.modal', function (event) {
-        let targetButton = event.relatedTarget;
-        editForm.dataset.logId = targetButton.dataset.logId;
-        nameInput.value = targetButton.dataset.name;
-        if (targetButton.dataset.temp > 0) {
-            tempInput.value = targetButton.dataset.temp;
-        } else {
-            tempInput.value = 36.6;
-        };
-    });
-    editForm.addEventListener('submit', function(event){
-        let editModalBody = document.getElementById('editModalBody');
-        let html = `
-        <div class="d-flex justify-content-center" style="margin: 25% 25% 25% 25%;">
-            <div class="spinner-border" role="status">
-                <span class="visually-hidden">Loading...</span>
-            </div>
-        </div>
-        `;
-        editModalBody.innerHTML  = html;
-        pywebview.api.edit_log(this.dataset.logId, nameInput.value, tempInput.value);
-    });
-</script>
-<script type="text/javascript">
-    let addLogModal = document.getElementById('addLogModal');
-    let addForm = document.getElementById('addForm');
-    let newNameInput = document.getElementById('newNameInput');
-    let newTempInput = document.getElementById('newTempInput');
-    let newDateInput = document.getElementById('newDateInput');
-    addForm.addEventListener('submit', function(event){
-        let addModalBody = document.getElementById('addModalBody');
-        let html = `
-        <div class="d-flex justify-content-center" style="margin: 25% 25% 25% 25%;">
-            <div class="spinner-border" role="status">
-                <span class="visually-hidden">Loading...</span>
-            </div>
-        </div>
-        `;
-        addModalBody.innerHTML  = html;
-        pywebview.api.add_log(newNameInput.value, newTempInput.value, newDateInput.value);
-    });
-</script>
+
 <div class="modal fade" id="colorSchemeModal" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content" style="background: var(--root-bg)">
             <form id="settingsForm" method="get">
                 <input type="hidden" name="date" value="{{date}}"/>
+                <input type="hidden" name="group" value="{{group}}"/>
                 <div class="modal-header">
                     <h5 class="modal-title">Выбор цветовой схемы</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
