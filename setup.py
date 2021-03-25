@@ -73,13 +73,14 @@ cx_Freeze.setup(
                 r"ThermometryLog\logger.py",
                 r"ThermometryLog\excel.py",
                 r"ThermometryLog\csv_handler.py",
+                r"ThermometryLog\tools.py",
             ],  # Файлы проекта
             "excludes": excludes,
             "zip_include_packages": zip_include_packages,
         },
         "build": {"build_exe": "build\ThermometryLog"},  # Место назначения
     },
-    version="1.1.0",
+    version="1.2.0",
     description="Приложение для ведения журнала термометрии.",
     author="AlexDev",
     executables=executables,

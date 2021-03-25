@@ -347,7 +347,7 @@ def main() -> NoReturn:
     window.shown += _on_shown
 
     logger.info("Запуск окна.")
-    webview.start(_init, window, debug=True)
+    webview.start(_init, window)
 
 
 logger.info("Создание окна.")
