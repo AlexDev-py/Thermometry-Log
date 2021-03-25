@@ -28,6 +28,7 @@
         </button>
         <form class="search" style="margin-left: 1rem; margin-bottom: 1rem;" method="get" action="/search">
             <input type="hidden" name="date" value="{{date}}">
+            <input type="hidden" name="group" value="{{group}}">
             <input name="search" type="text" placeholder="Имя, температура" required>
             <button type="submit"></button>
         </form>
@@ -206,6 +207,39 @@
         </tbody>
     </table>
     {% else %}
+    {% if can_init %}
+    <div class="modal fade" id="waitModal" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content" style="background: var(--root-bg)">
+                <form id="waitForm" method="get">
+                    <input type="hidden" name="date" value="{{date}}"/>
+                    <input type="hidden" name="group" value="{{group}}"/>
+                    <div class="modal-body text-center">
+                        <div class="d-flex justify-content-center py-5">
+                            <div class="spinner-border" role="status">
+                                <span class="visually-hidden">Loading...</span>
+                            </div>
+                            <p class="mx-2">инициализация шаблона группы</p>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+    <script type="text/javascript">
+        document.addEventListener("DOMContentLoaded", function(event) {
+            var myModal = new bootstrap.Modal(document.getElementById('waitModal'), {
+                keyboard: false, backdrop: 'static'
+            });
+            myModal.show();
+        });
+    </script>
+    <script type="text/javascript">
+        window.addEventListener('pywebviewready', function() {
+            pywebview.api.init_group_template('{{group}}', '{{date}}');
+        })
+    </script>
+    {% else %}
     <div class="container text-center ">
         <h1 class="mt-5">
             Нет записей на это число
@@ -221,6 +255,7 @@
             <button class="btn button" type="button" data-bs-toggle="modal" data-bs-target="#addLogModal">Добавить запись</button>
         </div>
     </div>
+    {% endif %}
     {% endif %}
 </div>
 

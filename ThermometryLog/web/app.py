@@ -5,9 +5,9 @@
 """
 
 import difflib
+import json
 import os
 import re
-import json
 from datetime import datetime
 from typing import List
 
@@ -16,7 +16,6 @@ from webview import Window
 
 from database import ThermometryLog, Float, Groups
 from logger import logger, LOCAL_APPDATA
-import csv_handler
 
 logger.info("Создание веб-приложения.")
 DB_PATH: str = ...  # Путь к базе данных
@@ -64,26 +63,16 @@ def home():
     WINDOW.set_title(f"Журнал термометрии - Группа: {group_name}")
 
     logger.info("Получение записей.")
-    thermometry_log = ThermometryLog(DB_PATH)
-    logs: List[ThermometryLog] = thermometry_log.filter(
+    logs: List[ThermometryLog] = ThermometryLog(DB_PATH).filter(
         date=date.strftime("%d.%m.%Y"),
         return_list=True,
         **({} if group["id"] == 0 else {"grp": group["id"]}),
     )
 
+    can_init = False
     if len(logs) == 0 and group["template"]:
         if date.strftime("%d.%m.%Y") == datetime.now().strftime("%d.%m.%Y"):
-            csv_handler.import_data(
-                group["template"],
-                thermometry_log,
-                date.strftime("%Y-%m-%d"),
-                group["id"],
-            )
-            logs = thermometry_log.filter(
-                date=date.strftime("%d.%m.%Y"),
-                return_list=True,
-                **({} if group == 0 else {"grp": group["id"]}),
-            )
+            can_init = True
 
     if len(logs):
         average_temp = round(sum(map(lambda log: log.temperature, logs)) / len(logs), 1)
@@ -103,6 +92,7 @@ def home():
         date=date.strftime("%Y-%m-%d"),
         now_date=datetime.now().strftime("%Y-%m-%d"),
         group=group_name,
+        can_init=can_init,
     )
 
 
@@ -119,13 +109,19 @@ def search():
 
     condition: str = request.args.get("search").lower()  # Поисковый запрос
     date = datetime.strptime(request.args.get("date"), "%Y-%m-%d")
+    group_name = request.args.get("group")
+    group = groups.get()[group_name]
     thermometry_log = ThermometryLog(DB_PATH)
 
     # Если передана температура
     if re.fullmatch(r"\d+[.,]\d+", condition) or condition.isdigit():
         logger.info("Получение записей.")
         condition: float = Float(round(float(condition.replace(",", ".")), 1))
-        results = thermometry_log.filter(temperature=condition, return_list=True)
+        results = thermometry_log.filter(
+            temperature=condition,
+            return_list=True,
+            **({} if group["id"] == 0 else {"grp": group["id"]}),
+        )
         results.sort(key=lambda lg: lg.date, reverse=True)
         logger.info("Отправка ответа.")
         return render_template(
@@ -133,10 +129,14 @@ def search():
             data=results,
             date=date.strftime("%Y-%m-%d"),
             condition=condition,
+            group=group_name,
         )
 
     logger.info("Получение записей.")
-    logs = thermometry_log.filter(return_list=True)
+    logs = thermometry_log.filter(
+        return_list=True,
+        **({} if group["id"] == 0 else {"grp": group["id"]}),
+    )
     names = set()  # Всё Фамилии, Имена, Отчества
     for log in logs:
         for x in log.name.split():
@@ -177,6 +177,7 @@ def search():
         average_temp=average_temp,
         min_temp=min_temp,
         max_temp=max_temp,
+        group=group_name,
     )
 
 
@@ -197,7 +198,7 @@ def groups_view():
 @app.route("/webview2")
 def webview2():
     """
-    Сообщает о том, что не найден WebView2
+    Сообщает о том, что не найден WebView2.
     """
 
     return render_template("webview2.html", color_scheme=settings["color_scheme"])

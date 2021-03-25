@@ -7,37 +7,19 @@
 
 """
 
-from datetime import datetime, timedelta
-from typing import NoReturn, Literal, Tuple, Union
 import json
-import subprocess
-import platform
+from datetime import datetime, timedelta
+from typing import NoReturn, Literal, Tuple
 
 import webview
 from sqlite3_api import API
 
-import excel
 import csv_handler
+import excel
+import tools
 import web.app
 from database import ThermometryLog, Float
 from logger import logger, LOCAL_APPDATA
-
-SPINNER = """
-`
-<div class="d-flex justify-content-center py-5">
-    <div class="spinner-border" role="status">
-        <span class="visually-hidden">Loading...</span>
-    </div>
-</div>
-`;
-"""  # Состояние загрузки
-NEED_FILE = """
-`
-<div class="text-center py-5">
-    Выберите файл
-</div>
-`;
-"""  # Состояние выбора файла
 
 
 class JSApi:
@@ -55,17 +37,14 @@ class JSApi:
         """
 
         logger.info("Запрос на удаление записи `%s`.", log_id)
-        window.evaluate_js(
-            f"document.getElementById('deleteModalBody').innerHTML = {SPINNER}"
-        )
+        tools.loading_modal("deleteModalBody")
+
         sql = self.sql
         sql.execute("DELETE FROM thermometrylog WHERE id=?", log_id)
         sql.commit()
-        logger.info("Удалена запись `%s` .", log_id)
 
-        window.evaluate_js(
-            "document.getElementById('deleteForm').submit();"
-        )  # Обновляем страницу
+        logger.info("Удалена запись `%s` .", log_id)
+        tools.submit_form("deleteForm")
 
     def edit_log(self, log_id: int, name: str, temperature: float):
         """
@@ -76,53 +55,42 @@ class JSApi:
         """
 
         logger.info("Запрос на изменение записи `%s`.", log_id)
-        window.evaluate_js(
-            f"document.getElementById('editModalBody').innerHTML = {SPINNER}"
-        )
+        tools.loading_modal("editModalBody")
+
         self.thermometry_logs.filter(id=log_id).update(
             name=name, temperature=Float(temperature)
         )
+
         logger.info(
             "Изменена запись `%s`. новые данные: name=%s, temperature=%s",
-            log_id,
-            name,
-            temperature,
+            *(log_id, name, temperature),
         )
-
-        window.evaluate_js(
-            "document.getElementById('editForm').submit();"
-        )  # Обновляем страницу
+        tools.submit_form("editForm")
 
     def add_log(self, name: str, temperature: float, date: str, group: str):
         """
         Создаем новую запись.
         :param name: ФИО человека.
         :param temperature: Температура.
-        :param date: Дата в формате `%Y-%m-%d`.
+        :param date: Дата (в формате '%Y-%m-%d').
         :param group: Группа, в которой создаётся запись.
         """
 
         logger.info("Запрос на создание записи в группе `%s`.", group)
-        window.evaluate_js(
-            f"document.getElementById('addModalBody').innerHTML = {SPINNER}"
-        )
+        tools.loading_modal("addModalBody")
+
         self.thermometry_logs.insert(
             name=name,
             temperature=Float(temperature),
             date=datetime.strptime(date, "%Y-%m-%d").strftime("%d.%m.%Y"),
             grp=web.app.groups.get()[group]["id"],
         )
+
         logger.info(
             "Создана новая запись в группе `%s`. name=%s, temperature=%s, date=%s",
-            group,
-            name,
-            temperature,
-            date,
+            *(group, name, temperature, date),
         )
-
-        window.evaluate_js(
-            "document.getElementById('addForm').submit();"
-        )  # Обновляем страницу
+        tools.submit_form("addForm")
 
     def import_logs(self, date: str, group: str):
         """
@@ -143,9 +111,7 @@ class JSApi:
         )  # Получаем путь к нужному файлу
 
         if file:
-            window.evaluate_js(
-                f"document.getElementById('importLogsModalBody').innerHTML = {SPINNER}"
-            )
+            tools.loading_modal("importLogsModalBody")
             file: str = file[0]
             logger.info("Выбран файл %s", file)
             file_type = file.split(".")[-1]  # Расширение файла
@@ -158,9 +124,7 @@ class JSApi:
         else:
             logger.info("Файл не выбран.")
 
-        window.evaluate_js(
-            "document.getElementById('importLogsForm').submit();"
-        )  # Обновляем страницу
+        tools.submit_form("importLogsForm")
 
     def export_logs(
         self,
@@ -178,9 +142,7 @@ class JSApi:
         """
 
         logger.info("Запрос на экспортирование данных.")
-        window.evaluate_js(
-            f"document.getElementById('exportLogsModalBody').innerHTML = {NEED_FILE}"
-        )
+        tools.file_modal("exportLogsModalBody")
 
         group = (web.app.groups.get()[group]["id"], group)
         start_date = datetime.strptime(dates[0], "%Y-%m-%d")
@@ -202,9 +164,7 @@ class JSApi:
         )  # Получаем местоположение файла
 
         if file:
-            window.evaluate_js(
-                f"document.getElementById('exportLogsModalBody').innerHTML = {SPINNER}"
-            )
+            tools.loading_modal("exportLogsModalBody")
             logger.info("Выбран файл %s", file)
 
             if file_type == "excel":
@@ -217,9 +177,23 @@ class JSApi:
         else:
             logger.info("Файл не выбран.")
 
-        window.evaluate_js(
-            "document.getElementById('exportLogsForm').submit();"
-        )  # Обновляем страницу
+        tools.submit_form("exportLogsForm")
+
+    def init_group_template(self, group: str, date: str):
+        """
+        Инициализируем шаблон группы.
+        :param group: Группа.
+        :param date: Дата, на которую идет инициализация (в формате '%Y-%m-%d').
+        """
+
+        group = web.app.groups.get()[group]
+        csv_handler.import_data(
+            filename=group["template"],
+            database=self.thermometry_logs,
+            date=date,
+            group=group["id"],
+        )
+        tools.submit_form("waitForm")
 
     @property
     def sql(self):
@@ -254,46 +228,13 @@ def change_color_scheme(color_scheme: Literal["default", "light", "dark"]):
     """
 
     logger.info("Запрос на изменение цветовой схемы.")
+
     web.app.settings["color_scheme"] = color_scheme
     with open(web.app.SETTINGS_FILE, "w") as settings_file:
         json.dump(web.app.settings, settings_file)
+
     logger.info(f"Цветовая схема изменена на `%s`", color_scheme)
-
-    window.evaluate_js(
-        "document.getElementById('settingsForm').submit();"
-    )  # Обновляем страницу
-
-
-def check_webview2() -> Union["True", "False"]:
-    """
-    Проверяет наличие WebView2.
-    :return: True or False.
-    """
-
-    def _cmd(request: str):
-        return (
-            subprocess.Popen(
-                request, text=True, stdout=subprocess.PIPE, encoding="cp866"
-            )
-            .stdout.read()
-            .strip()
-        )
-
-    if platform.architecture()[0] == "64bit":
-        webview2_status = _cmd(
-            "reg flags HKEY_LOCAL_MACHINE\SOFTWARE\WOW6432Node\Microsoft"
-            "\EdgeUpdate\Clients\{F3017226-FE2A-4295-8BDF-00C3A9A7E4C5}"
-        )
-    else:
-        webview2_status = _cmd(
-            "reg flags HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\
-            EdgeUpdate\Clients\{F3017226-FE2A-4295-8BDF-00C3A9A7E4C5}"
-        )
-
-    if webview2_status == "":
-        logger.info("WebView2 не найден.")
-        return False
-    return True
+    tools.submit_form("settingsForm")
 
 
 def add_group(name: str):
@@ -303,22 +244,19 @@ def add_group(name: str):
     """
 
     logger.info("Запрос на создание группы.")
-    window.evaluate_js(f"document.getElementById('addModalBody').innerHTML = {SPINNER}")
+    tools.loading_modal("addModalBody")
+
     groups = web.app.groups.get()
     if name in groups:
         window.evaluate_js("alert('Группа с таким названием уже существует.')")
     else:
-        window.evaluate_js(
-            f"document.getElementById('addModalBody').innerHTML = {NEED_FILE}"
-        )
+        tools.file_modal("addModalBody")
         file = window.create_file_dialog(
             dialog_type=webview.OPEN_DIALOG,
             file_types=("csv file (*.csv)",),
         )  # Получаем путь к шаблону
 
-        window.evaluate_js(
-            f"document.getElementById('addModalBody').innerHTML = {SPINNER}"
-        )
+        tools.loading_modal("addModalBody")
 
         if file:
             file = file[0]
@@ -330,9 +268,7 @@ def add_group(name: str):
         web.app.groups.add_group(name, file)
         logger.info("Создана группа. name=%s, template=%s", name, file)
 
-    window.evaluate_js(
-        "document.getElementById('addForm').submit();"
-    )  # Обновляем страницу
+    tools.submit_form("addForm")
 
 
 def delete_group(name: str):
@@ -342,17 +278,15 @@ def delete_group(name: str):
     """
 
     logger.info("Запрос на удаление группы `%s`.", name)
-    window.evaluate_js(
-        f"document.getElementById('deleteModalBody').innerHTML = {SPINNER}"
-    )
+    tools.loading_modal("deleteModalBody")
+
     _id = web.app.groups.del_group(name)
     sql = js_api.sql
     sql.execute("DELETE FROM thermometrylog WHERE grp=?", _id)
     sql.commit()
     logger.info("Удалена группа `%s`", name)
-    window.evaluate_js(
-        "document.getElementById('deleteForm').submit();"
-    )  # Обновляем страницу
+
+    tools.submit_form("deleteForm")
 
 
 def edit_group(old_name: str, new_name: str):
@@ -363,17 +297,14 @@ def edit_group(old_name: str, new_name: str):
     """
 
     logger.info("Запрос на изменение группы `%s`.", old_name)
-    window.evaluate_js(
-        f"document.getElementById('editModalBody').innerHTML = {NEED_FILE}"
-    )
+
+    tools.file_modal("editModalBody")
     file = window.create_file_dialog(
         dialog_type=webview.OPEN_DIALOG,
         file_types=("csv file (*.csv)",),
     )  # Получаем путь к шаблону
 
-    window.evaluate_js(
-        f"document.getElementById('editModalBody').innerHTML = {SPINNER}"
-    )
+    tools.loading_modal("editModalBody")
 
     if file:
         file = file[0]
@@ -385,14 +316,10 @@ def edit_group(old_name: str, new_name: str):
     web.app.groups.edit_group(old_name, new_name, file)
     logger.info(
         "Изменена группа `%s`. новые данные: name=%s, template=%s",
-        old_name,
-        new_name,
-        file,
+        *(old_name, new_name, file),
     )
 
-    window.evaluate_js(
-        "document.getElementById('editForm').submit();"
-    )  # Обновляем страницу
+    tools.submit_form("editForm")
 
 
 def main() -> NoReturn:
@@ -412,7 +339,7 @@ def main() -> NoReturn:
 
     def _on_shown():
         logger.info("Окно развернуто.")
-        if not check_webview2():
+        if not tools.check_webview2():
             js_api.open_url("/webview2")
 
     # Добавляем обработчики событий
@@ -425,11 +352,11 @@ def main() -> NoReturn:
 
 
 logger.info("Создание окна.")
-js_api = JSApi()
+js_api = tools.js_api = JSApi()
 DB_PATH = rf"{LOCAL_APPDATA}\database.sqlite"  # Путь к базе данных
 web.app.DB_PATH = DB_PATH
 
-window = web.app.WINDOW = webview.create_window(
+window = web.app.WINDOW = tools.WINDOW = webview.create_window(
     "Журнал термометрии",
     web.app.app,
     width=1080,
