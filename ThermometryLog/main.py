@@ -152,11 +152,10 @@ class JSApi:
             for i in range((end_date - start_date).days + 1)
         ]  # Список дат, которые нужно экспортировать
 
-        save_filename = "Журнал термометрии - {group} {dates}{template}{ft}".format(
+        save_filename = "Журнал термометрии - {group} {dates}{ft}".format(
             group=group[1],
             dates=(dates[0] if dates[0] == dates[-1] else f"{dates[0]} - {dates[-1]}"),
-            template="(шаблон)" if file_type == "csv" and template else "",
-            ft=".xlsx" if file_type == "excel" else ".csv",
+            ft=".xlsx" if file_type == "excel" else (".csvt" if template else ".csv"),
         )  # Имя файла для сохранения
         file = window.create_file_dialog(
             dialog_type=webview.SAVE_DIALOG,
@@ -253,7 +252,7 @@ def add_group(name: str):
         tools.file_modal("addModalBody")
         file = window.create_file_dialog(
             dialog_type=webview.OPEN_DIALOG,
-            file_types=("csv file (*.csv)",),
+            file_types=("csv template file (*.csvt)",),
         )  # Получаем путь к шаблону
 
         tools.loading_modal("addModalBody")
@@ -301,7 +300,7 @@ def edit_group(old_name: str, new_name: str):
     tools.file_modal("editModalBody")
     file = window.create_file_dialog(
         dialog_type=webview.OPEN_DIALOG,
-        file_types=("csv file (*.csv)",),
+        file_types=("csv template file (*.csvt)",),
     )  # Получаем путь к шаблону
 
     tools.loading_modal("editModalBody")
