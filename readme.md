@@ -15,7 +15,7 @@
 
 Перейдем к установке.
 -----
-Для начала скачайте установочный файл по этой [ссылке](https://github.com/AlexDev-py/Thermometry-Log/releases/tag/v1.1.0).
+Для начала скачайте установочный файл по этой [ссылке](https://github.com/AlexDev-py/Thermometry-Log/releases/tag/v1.2.0).
 
 После запуска Вас поприветствует мастер установки и попросит нажать "Далее".
 Сделайте это.
@@ -48,7 +48,7 @@
 
 Для разработчиков
 ----
-_P.S.: Для запуска проекта необходим Python 3.8+ и Microsoft Edge [WebView2](https://developer.microsoft.com/en-us/microsoft-edge/webview2/#download-section)_ 
+_P.S.: Для запуска проекта необходим Python 3.8+ и [Microsoft Edge WebView2](https://developer.microsoft.com/en-us/microsoft-edge/webview2/#download-section)_ 
 
 Вы можете скачать исходники проекта с помощью git.
 ```commandline
