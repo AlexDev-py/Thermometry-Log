@@ -107,6 +107,7 @@ class JSApi:
                 "All (*.xls;*.xlsx;*.xlsm;*.csv)",
                 "Excel file (*.xls;*.xlsx;*.xlsm)",
                 "csv file (*.csv)",
+                "csv template file (*.csvt)",
             ),
         )  # Получаем путь к нужному файлу
 
