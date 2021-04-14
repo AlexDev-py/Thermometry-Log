@@ -59,10 +59,10 @@ def import_data(filename: str, database: ThermometryLog, group: int = 0):
             except ValueError:
                 continue
             try:  # Валидация поля `time`
-                time = [int(x) for x in sheet.cell(i, 3).value.split(':')]
+                time = [int(x) for x in sheet.cell(i, 3).value.split(":")]
                 if len(time) != 2:
                     raise ValueError
-                time = ':'.join(map(str, time))
+                time = ":".join(map(str, time))
             except ValueError:
                 continue
 

@@ -60,6 +60,7 @@ def home():
 
     group_name = request.args.get("group") or "Общая"
     group = groups.get()[group_name]
+
     WINDOW.set_title(f"Журнал термометрии - Группа: {group_name}")
 
     logger.info("Получение записей.")

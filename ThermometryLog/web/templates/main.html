@@ -161,7 +161,7 @@
                             </svg>
                         </button>
                     </div>
-                    {{log.date}}
+                    {{log.date}}{% if log.time != '0' %} {{log.time}}{% endif %}
                 </td>
                 <td>{{log.name}}</td>
                 <td>

@@ -57,8 +57,11 @@ class JSApi:
         logger.info("Запрос на изменение записи `%s`.", log_id)
         tools.loading_modal("editModalBody")
 
-        self.thermometry_logs.filter(id=log_id).update(
-            name=name, temperature=Float(temperature)
+        log = self.thermometry_logs.filter(id=log_id)
+        log.update(
+            name=name,
+            temperature=Float(temperature),
+            time=log.time if log.time != "0" else datetime.now().strftime("%H:%M"),
         )
 
         logger.info(
@@ -78,14 +81,14 @@ class JSApi:
 
         logger.info("Запрос на создание записи в группе `%s`.", group)
         tools.loading_modal("addModalBody")
-        time = datetime.now().strftime('%H:%M')
+        time = datetime.now().strftime("%H:%M")
 
         self.thermometry_logs.insert(
             name=name,
             temperature=Float(temperature),
             date=datetime.strptime(date, "%Y-%m-%d").strftime("%d.%m.%Y"),
             grp=web.app.groups.get()[group]["id"],
-            time=time
+            time=time,
         )
 
         logger.info(
@@ -106,7 +109,7 @@ class JSApi:
         file = window.create_file_dialog(
             dialog_type=webview.OPEN_DIALOG,
             file_types=(
-                "All (*.xls;*.xlsx;*.xlsm;*.csv)",
+                "All (*.xls;*.xlsx;*.xlsm;*.csv;*.csvt)",
                 "Excel file (*.xls;*.xlsx;*.xlsm)",
                 "csv file (*.csv)",
                 "csv template file (*.csvt)",
@@ -350,7 +353,7 @@ def main() -> NoReturn:
     window.shown += _on_shown
 
     logger.info("Запуск окна.")
-    webview.start(_init, window)
+    webview.start(_init, window, debug=True)
 
 
 logger.info("Создание окна.")
