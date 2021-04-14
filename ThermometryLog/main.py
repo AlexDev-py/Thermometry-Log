@@ -78,17 +78,19 @@ class JSApi:
 
         logger.info("Запрос на создание записи в группе `%s`.", group)
         tools.loading_modal("addModalBody")
+        time = datetime.now().strftime('%H:%M')
 
         self.thermometry_logs.insert(
             name=name,
             temperature=Float(temperature),
             date=datetime.strptime(date, "%Y-%m-%d").strftime("%d.%m.%Y"),
             grp=web.app.groups.get()[group]["id"],
+            time=time
         )
 
         logger.info(
-            "Создана новая запись в группе `%s`. name=%s, temperature=%s, date=%s",
-            *(group, name, temperature, date),
+            "Создана новая запись в группе `%s`. name=%s, temperature=%s, date=%s, time=%s",
+            *(group, name, temperature, date, time),
         )
         tools.submit_form("addForm")
 

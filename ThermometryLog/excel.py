@@ -5,10 +5,10 @@
 
 Обрабатываются листы вида:
 |   Журнал термометрии на <date>   |
-| ФИО           | Температура      |
-| <name>        | <temperature>    |
-| <name>        | <temperature>    |
-| <name>        | <temperature>    |
+| ФИО    | Температура    | Время  |
+| <name> | <temperature>  | <time> |
+| <name> | <temperature>  | <time> |
+| <name> | <temperature>  | <time> |
 ...
 
 Названием листа должна являться дата.
@@ -47,7 +47,7 @@ def import_data(filename: str, database: ThermometryLog, group: int = 0):
         rows = sheet.max_row  # Кол-во строк в таблице
         cols = sheet.max_column  # Кол-во колонок в таблице
 
-        if rows <= 2 or cols != 2:
+        if rows <= 2 or cols != 3:
             continue
 
         for i in range(3, rows + 1):
@@ -58,12 +58,20 @@ def import_data(filename: str, database: ThermometryLog, group: int = 0):
                 temperature = float(sheet.cell(i, 2).value)
             except ValueError:
                 continue
+            try:  # Валидация поля `time`
+                time = [int(x) for x in sheet.cell(i, 3).value.split(':')]
+                if len(time) != 2:
+                    raise ValueError
+                time = ':'.join(map(str, time))
+            except ValueError:
+                continue
 
             database.insert(
                 name=name,
                 temperature=Float(round(temperature, 1)),
                 date=date.strftime("%d.%m.%Y"),
                 grp=group,
+                time=time,
             )
 
 
@@ -108,6 +116,6 @@ def export_data(
         sheet["A1"].alignment = Alignment(horizontal="center")
         sheet.append(["ФИО", "Температура"])
         for obj in data:
-            sheet.append([obj.name, obj.temperature])
+            sheet.append([obj.name, obj.temperature, obj.time])
 
     workbook.save(filename)  # Сохраняем в файл

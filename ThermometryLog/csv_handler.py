@@ -4,9 +4,9 @@
 Импорт и экспорт данных.
 
 Обрабатываются файлы с содержимым, вида:
-<date>,<name>,<temperature>
-<date>,<name>,<temperature>
-<date>,<name>,<temperature>
+<date>,<time>,<name>,<temperature>
+<date>,<time>,<name>,<temperature>
+<date>,<time>,<name>,<temperature>
 ...
 
 """
@@ -34,12 +34,13 @@ def import_data(filename: str, database: ThermometryLog, date: str, group: int =
         reader = csv.reader(csv_file)
         for row in reader:
             # Валидация полей
-            if len(name := row[1]) == 0:
+            if len(name := row[2]) == 0:
                 continue
             try:
                 if row[0] != "<TODAY>":  # Замена шаблона
                     date = datetime.strptime(row[0], "%d.%m.%Y")
-                temperature = 0 if row[2] == "<NONE>" else float(row[2])
+                temperature = 0 if row[3] == "<NONE>" else float(row[3])
+                time = 0 if row[1] == "<NONE>" else row[1]
             except ValueError:
                 continue
 
@@ -48,6 +49,7 @@ def import_data(filename: str, database: ThermometryLog, date: str, group: int =
                 temperature=Float(round(temperature, 1)),
                 date=date.strftime("%d.%m.%Y"),
                 grp=group,
+                time=time
             )
 
 
@@ -81,6 +83,6 @@ def export_data(
                     data.sort(key=lambda x: x.name)
                 for obj in data:
                     if template:
-                        writer.writerow(["<TODAY>", obj.name, "<NONE>"])
+                        writer.writerow(["<TODAY>", "<NONE>", obj.name, "<NONE>"])
                     else:
-                        writer.writerow([obj.date, obj.name, obj.temperature])
+                        writer.writerow([obj.date, obj.time, obj.name, obj.temperature])
