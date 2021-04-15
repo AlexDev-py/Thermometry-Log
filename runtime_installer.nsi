@@ -2,8 +2,8 @@
 
 ; HM NIS Edit Wizard helper defines
 !define PRODUCT_NAME "Журнал термометрии"
-!define PRODUCT_VERSION "1.2.0"
-!define PRODUCT_PUBLISHER "Alexdev"
+!define PRODUCT_VERSION "1.3.0"
+!define PRODUCT_PUBLISHER "AlexDev"
 !define PRODUCT_WEB_SITE "https://github.com/AlexDev-py/Thermometry-Log"
 !define PRODUCT_DIR_REGKEY "Software\Microsoft\Windows\CurrentVersion\App Paths\ThermometryLog.exe"
 !define PRODUCT_UNINST_KEY "Software\Microsoft\Windows\CurrentVersion\Uninstall\${PRODUCT_NAME}"
@@ -64,13 +64,6 @@ Section "Журнал термометрии" SEC01
   File "build\ThermometryLog\excel.py"
   SetOutPath "$INSTDIR\lib"
   File "build\ThermometryLog\lib\clr.pyd"
-  SetOutPath "$INSTDIR\lib\colorama"
-  File "build\ThermometryLog\lib\colorama\ansi.pyc"
-  File "build\ThermometryLog\lib\colorama\ansitowin32.pyc"
-  File "build\ThermometryLog\lib\colorama\initialise.pyc"
-  File "build\ThermometryLog\lib\colorama\win32.pyc"
-  File "build\ThermometryLog\lib\colorama\winterm.pyc"
-  File "build\ThermometryLog\lib\colorama\__init__.pyc"
   SetOutPath "$INSTDIR\lib\jinja2"
   File "build\ThermometryLog\lib\jinja2\asyncfilters.pyc"
   File "build\ThermometryLog\lib\jinja2\asyncsupport.pyc"
@@ -192,6 +185,7 @@ Section "Журнал термометрии" SEC01
   File "build\ThermometryLog\web\static\css\main.css"
   SetOutPath "$INSTDIR\web\static"
   File "build\ThermometryLog\web\static\logo.png"
+  File "build\ThermometryLog\web\static\loading.gif"
   SetOutPath "$INSTDIR\web\templates"
   File "build\ThermometryLog\web\templates\base.html"
   File "build\ThermometryLog\web\templates\groups.html"
@@ -199,6 +193,7 @@ Section "Журнал термометрии" SEC01
   File "build\ThermometryLog\web\templates\search_base.html"
   File "build\ThermometryLog\web\templates\search_name.html"
   File "build\ThermometryLog\web\templates\search_temp.html"
+  File "build\ThermometryLog\web\templates\start.html"
   File "build\ThermometryLog\web\templates\webview2.html"
   SetOutPath "$INSTDIR\web\__pycache__"
   File "build\ThermometryLog\web\__pycache__\app.cpython-38.pyc"
@@ -218,7 +213,6 @@ Section "Журнал термометрии" SEC01
 SectionEnd
 
 Section -AdditionalIcons
-  WriteIniStr "$INSTDIR\${PRODUCT_NAME}.url" "InternetShortcut" "URL" "${PRODUCT_WEB_SITE}"
   CreateShortCut "$SMPROGRAMS\Журнал термометрии\Uninstall.lnk" "$INSTDIR\uninst.exe"
 SectionEnd
 
@@ -239,7 +233,6 @@ SectionEnd
   !insertmacro MUI_DESCRIPTION_TEXT ${SEC02} "Microsoft Edge WebView2. Утилита, необходимая для работы приложения."
 !insertmacro MUI_FUNCTION_DESCRIPTION_END
 
-
 Function un.onUninstSuccess
   HideWindow
   MessageBox MB_ICONINFORMATION|MB_OK "Удаление программы $(^Name) было успешно завершено."
@@ -251,9 +244,7 @@ Function un.onInit
 FunctionEnd
 
 Section Uninstall
-  Delete "$INSTDIR\${PRODUCT_NAME}.url"
   Delete "$INSTDIR\uninst.exe"
-  Delete "$INSTDIR\MicrosoftEdgeWebview2Setup.exe"
   Delete "$LocalAppData\ThermometryLog\settings.json"
   Delete "$LocalAppData\ThermometryLog\logs.log"
   Delete "$LocalAppData\ThermometryLog\groups.json"
@@ -266,6 +257,7 @@ Section Uninstall
   Delete "$INSTDIR\__pycache__\csv_handler.cpython-38.pyc"
   Delete "$INSTDIR\web\__pycache__\app.cpython-38.pyc"
   Delete "$INSTDIR\web\templates\webview2.html"
+  Delete "$INSTDIR\web\templates\start.html"
   Delete "$INSTDIR\web\templates\search_temp.html"
   Delete "$INSTDIR\web\templates\search_name.html"
   Delete "$INSTDIR\web\templates\search_base.html"
@@ -273,6 +265,7 @@ Section Uninstall
   Delete "$INSTDIR\web\templates\groups.html"
   Delete "$INSTDIR\web\templates\base.html"
   Delete "$INSTDIR\web\static\logo.png"
+  Delete "$INSTDIR\web\static\loading.gif"
   Delete "$INSTDIR\web\static\css\main.css"
   Delete "$INSTDIR\web\static\css\light_color_scheme.css"
   Delete "$INSTDIR\web\static\css\default_color_scheme.css"
@@ -373,17 +366,11 @@ Section Uninstall
   Delete "$INSTDIR\lib\jinja2\bccache.pyc"
   Delete "$INSTDIR\lib\jinja2\asyncsupport.pyc"
   Delete "$INSTDIR\lib\jinja2\asyncfilters.pyc"
-  Delete "$INSTDIR\lib\colorama\__init__.pyc"
-  Delete "$INSTDIR\lib\colorama\winterm.pyc"
-  Delete "$INSTDIR\lib\colorama\win32.pyc"
-  Delete "$INSTDIR\lib\colorama\initialise.pyc"
-  Delete "$INSTDIR\lib\colorama\ansitowin32.pyc"
-  Delete "$INSTDIR\lib\colorama\ansi.pyc"
   Delete "$INSTDIR\lib\clr.pyd"
   Delete "$INSTDIR\excel.py"
   Delete "$INSTDIR\database.py"
   Delete "$INSTDIR\csv_handler.py"
-
+  
   Delete "$SMPROGRAMS\Журнал термометрии\Uninstall.lnk"
   Delete "$DESKTOP\Журнал термометрии.lnk"
   Delete "$SMPROGRAMS\Журнал термометрии\Журнал термометрии.lnk"
@@ -402,7 +389,6 @@ Section Uninstall
   RMDir "$INSTDIR\lib\webview"
   RMDir "$INSTDIR\lib\markupsafe"
   RMDir "$INSTDIR\lib\jinja2"
-  RMDir "$INSTDIR\lib\colorama"
   RMDir "$INSTDIR\lib"
   RMDir "$INSTDIR\__pycache__"
   RMDir "$INSTDIR"
