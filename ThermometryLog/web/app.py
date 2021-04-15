@@ -90,8 +90,8 @@ def home():
         **({} if group["id"] == 0 else {"grp": group["id"]}),
     )
 
-    if len(logs):
-        no_zero = list(filter(lambda log: log.temperature != 0, logs))
+    no_zero = list(filter(lambda log: log.temperature != 0, logs))
+    if len(no_zero):
         average_temp = round(
             sum(map(lambda log: log.temperature, no_zero)) / len(no_zero), 1
         )
@@ -176,8 +176,8 @@ def search():
         ],  # Похожие результаты
     )
 
-    if len(result["fullmatch"]):
-        no_zero = list(filter(lambda lg: lg.temperature != 0, result["fullmatch"]))
+    no_zero = list(filter(lambda lg: lg.temperature != 0, result["fullmatch"]))
+    if len(no_zero):
         average_temp = round(
             sum(map(lambda lg: lg.temperature, no_zero)) / len(no_zero), 1
         )
