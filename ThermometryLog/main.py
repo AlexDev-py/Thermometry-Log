@@ -10,7 +10,7 @@
 import csv
 import json
 from datetime import datetime, timedelta
-from typing import NoReturn, Literal, Tuple
+from typing import NoReturn, Literal, Tuple, List
 
 import webview
 
@@ -112,16 +112,15 @@ class JSApi:
         tools.loading_modal("globalEditModalBody")
         date = datetime.strptime(date, "%Y-%m-%d")
         group = web.app.groups.get()[group]  # Нужная группа
-        log: ThermometryLog = self.thermometry_logs.filter(
+        log: List[ThermometryLog] = self.thermometry_logs.filter(
             date=date.strftime("%d.%m.%Y"),
             grp=group["id"],
             name=name,
             return_list=True,
-        )[
-            0
-        ]  # Нужная запись
+        )
 
-        if log:
+        if len(log) == 1:
+            log: ThermometryLog = log[0]  # Нужная запись
             if log.time == "0":  # Если нет данных
                 log.update(
                     temperature=Float(temperature),
