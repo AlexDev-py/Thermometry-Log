@@ -59,10 +59,13 @@ def import_data(filename: str, database: ThermometryLog, group: int = 0):
             except ValueError:
                 continue
             try:  # Валидация поля `time`
-                time = [int(x) for x in sheet.cell(i, 3).value.split(":")]
-                if len(time) != 2:
-                    raise ValueError
-                time = ":".join(map(str, time))
+                if sheet.cell(i, 3).value == "0":
+                    time = 0
+                else:
+                    time = [int(x) for x in sheet.cell(i, 3).value.split(":")]
+                    if len(time) != 2:
+                        raise ValueError
+                    time = ":".join(map(str, time))
             except ValueError:
                 continue
 
@@ -108,15 +111,16 @@ def export_data(
 
         sheet = workbook.create_sheet(date)  # Новый лист
         # Размер колонок
-        sheet.column_dimensions["A"].width = 28
-        sheet.column_dimensions["B"].width = 28
-        # Объединяем ячейки A1 и B1
-        sheet.merge_cells("A1:B1")
+        sheet.column_dimensions["A"].width = 36
+        sheet.column_dimensions["B"].width = 12
+        sheet.column_dimensions["C"].width = 12
+        # Объединяем ячейки A1 - C1
+        sheet.merge_cells("A1:C1")
         # Заполняем ячейки
         sheet["A1"] = f"Журнал термометрии на {date} в группе `{group[1]}`"
         sheet["A1"].font = Font(bold=True)
         sheet["A1"].alignment = Alignment(horizontal="center")
-        sheet.append(["ФИО", "Температура"])
+        sheet.append(["ФИО", "Температура", "Время"])
         for obj in data:
             sheet.append([obj.name, obj.temperature, obj.time])
 
