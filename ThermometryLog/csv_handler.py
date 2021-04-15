@@ -45,12 +45,14 @@ def import_data(filename: str, database: ThermometryLog, date: str, group: int =
                 continue
 
             database.insert(
+                need_commit=False,
                 name=name,
                 temperature=Float(round(temperature, 1)),
                 date=date.strftime("%d.%m.%Y"),
                 grp=group,
                 time=time,
             )
+    database.commit()
 
 
 def export_data(
