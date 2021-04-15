@@ -27,7 +27,7 @@ from logger import logger
 
 def import_data(filename: str, database: ThermometryLog, group: int = 0):
     """
-    Импортируем данные из книги Excel.
+    Импортирует данные из книги Excel.
     :param filename: Имя файла.
     :param database: API для работы с базой данных.
     :param group: Группа, в которую импортируем данные.
@@ -84,9 +84,9 @@ def export_data(
     group: Tuple[int, str] = (0, "Общая"),
 ):
     """
-    Экспортируем данные в книгу Excel.
+    Экспортирует данные в книгу Excel.
     :param filename: Имя файла.
-    :param dates: Даты - названия страниц (в формате '%d.%m.%Y').
+    :param dates: Даты — названия страниц (в формате '%d.%m.%Y').
     :param database: API для работы с базой данных.
     :param group: Информация о группе. (<ID>, <название>)
     """

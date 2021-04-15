@@ -36,7 +36,7 @@ class ThermometryLog(Table):
     temperature: Float  # Температура человека
     date: str  # Дата измерения в формате `%d.%m.%Y` (<день>.<месяц>.<год>)
     grp: int = 0  # Группа, к которой относится человек (default: общая)
-    time: str  # Время измереня в формате `<час>:<минута>`
+    time: str  # Время измерения в формате `<час>:<минута>`
 
 
 class Groups:
@@ -52,7 +52,7 @@ class Groups:
     @staticmethod
     def get() -> dict:
         """
-        Получаем группы.
+        Возвращает группы.
         :return: {"<Название группы>": {"template": <путь к шаблону>/None}}
         """
 
@@ -62,7 +62,7 @@ class Groups:
     @staticmethod
     def save(data: dict):
         """
-        Сохраняем группы.
+        Сохраняет группы.
         :param data: Данные, полученные методом `Groups.get()`
         """
 
@@ -102,7 +102,7 @@ class Groups:
     @staticmethod
     def edit_group(old_name: str, new_name: str, template: Union[str, None]) -> int:
         """
-        Редактируем группу.
+        Редактирует группу.
         :param old_name: Старое название группы.
         :param new_name: Новое название группы.
         :param template: Путь к шаблону.

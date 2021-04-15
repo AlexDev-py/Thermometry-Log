@@ -31,10 +31,11 @@ else:
 
 app = Flask(
     __name__,
-    template_folder=f"{ROOT}/web/templates",
-    static_folder=f"{ROOT}/web/static",
+    template_folder=f"{ROOT}/web/templates",  # Директория с html
+    static_folder=f"{ROOT}/web/static",  # Директория c картинками и css
 )
 
+# Создаем файл настроек или получаем данные
 SETTINGS_FILE = rf"{LOCAL_APPDATA}\settings.json"
 if not os.path.exists(SETTINGS_FILE):
     with open(SETTINGS_FILE, "w") as settings_file:
@@ -44,30 +45,33 @@ else:
     with open(SETTINGS_FILE) as settings_file:
         settings = json.load(settings_file)
 del settings_file
-groups = Groups()
+
+groups = Groups()  # Работа с группами
 
 
 @app.route("/")
 def home():
     """
-    Главная
+    Главная страница.
     """
 
     logger.info("Запрос на главную страницу с параметрами %s.", dict(request.args))
 
-    date = datetime.now()
-    if request.args.get("date"):
+    date = datetime.now()  # Сегодня
+    if request.args.get("date"):  # Если передано в запросе
         date = datetime.strptime(request.args.get("date"), "%Y-%m-%d")
 
     group_name = request.args.get("group") or "Общая"
-    all_groups = groups.get()
-    group = all_groups[group_name]
+    all_groups = groups.get()  # Все группы
+    group = all_groups[group_name]  # Нужная группа
     all_group_names = [
         grp_name for grp_name, grp in all_groups.items() if grp["template"]
-    ]
+    ]  # Названия групп, к которым подключен шаблон
 
     # Проверяем нужно ли инициализировать шаблоны групп
-    not_inited_groups = []
+    not_inited_groups = (
+        []
+    )  # Группы, в которых не инициализирован шаблон, на сегодняшнее число
     if FIRST_START:
         for grp_name, grp in all_groups.items():
             if grp["template"]:  # Если у группы есть шаблон
@@ -90,7 +94,9 @@ def home():
         **({} if group["id"] == 0 else {"grp": group["id"]}),
     )
 
-    no_zero = list(filter(lambda log: log.temperature != 0, logs))
+    no_zero = list(
+        filter(lambda log: log.temperature != 0, logs)
+    )  # Записи с не нулевой температурой
     if len(no_zero):
         average_temp = round(
             sum(map(lambda log: log.temperature, no_zero)) / len(no_zero), 1
@@ -130,7 +136,7 @@ def search():
     condition: str = request.args.get("search").lower()  # Поисковый запрос
     date = datetime.strptime(request.args.get("date"), "%Y-%m-%d")
     group_name = request.args.get("group")
-    group = groups.get()[group_name]
+    group = groups.get()[group_name]  # Нужная группа
     thermometry_log = ThermometryLog(DB_PATH)
 
     # Если передана температура

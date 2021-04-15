@@ -36,7 +36,7 @@ def loading_modal(div_id: str):
 
 def file_modal(div_id: str):
     """
-    modal выбора файла.
+    Modal выбора файла.
     """
 
     WINDOW.evaluate_js(
@@ -52,7 +52,7 @@ def file_modal(div_id: str):
 
 def submit_form(form_id):
     """
-    Закрываем форму и обновляем страницу.
+    Закрывает форму и обновляет страницу.
     """
 
     WINDOW.evaluate_js(f"document.getElementById('{form_id}').submit();")

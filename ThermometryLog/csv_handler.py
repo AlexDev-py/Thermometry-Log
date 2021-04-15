@@ -21,7 +21,7 @@ from logger import logger
 
 def import_data(filename: str, database: ThermometryLog, date: str, group: int = 0):
     """
-    Импортируем данные из csv файла.
+    Импортирует данные из csv файла.
     :param filename: Имя файла.
     :param database: API для работы с базой данных.
     :param date: Дата, на которую импортируется шаблон (В формате '%Y-%m-%d').
@@ -63,7 +63,7 @@ def export_data(
     template=False,
 ):
     """
-    Экспортируем данные в csv файл.
+    Экспортирует данные в csv файл.
     :param filename: Имя файла.
     :param dates: Даты, которые нужно экспортировать (в формате '%d.%m.%Y').
     :param database: API для работы с базой данных.

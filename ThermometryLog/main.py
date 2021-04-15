@@ -7,13 +7,12 @@
 
 """
 
+import csv
 import json
 from datetime import datetime, timedelta
 from typing import NoReturn, Literal, Tuple
-import csv
 
 import webview
-from sqlite3_api import API
 
 import csv_handler
 import excel
@@ -21,6 +20,7 @@ import tools
 import web.app
 from database import ThermometryLog, Float
 from logger import logger, LOCAL_APPDATA
+from sqlite3_api import API
 
 
 class JSApi:
@@ -33,7 +33,7 @@ class JSApi:
 
     def delete_log(self, log_id: int):
         """
-        Удаляем запись под номером `log_id`.
+        Удаляет запись под номером `log_id`.
         :param log_id: ID записи, которую нужно удалить.
         """
 
@@ -41,6 +41,7 @@ class JSApi:
         tools.loading_modal("deleteModalBody")
 
         sql = self.sql
+        # Не заменять на self.sql.execute()!
         sql.execute("DELETE FROM thermometrylog WHERE id=?", log_id)
         sql.commit()
 
@@ -49,7 +50,7 @@ class JSApi:
 
     def edit_log(self, log_id: int, name: str, temperature: float):
         """
-        Изменяем запись под номером `log_id`.
+        Изменяет запись под номером `log_id`.
         :param log_id: ID записи, которую нужно изменить.
         :param name: Новое значение для поля `name`.
         :param temperature: Новое значение для поля `temperature`.
@@ -73,7 +74,7 @@ class JSApi:
 
     def add_log(self, name: str, temperature: float, date: str, group: str):
         """
-        Создаем новую запись.
+        Создает новую запись.
         :param name: ФИО человека.
         :param temperature: Температура.
         :param date: Дата (в формате '%Y-%m-%d').
@@ -82,34 +83,7 @@ class JSApi:
 
         logger.info("Запрос на создание записи в группе `%s`.", group)
         tools.loading_modal("addModalBody")
-        time = datetime.now().strftime("%H:%M")
-
-        self.thermometry_logs.insert(
-            name=name,
-            temperature=Float(temperature),
-            date=datetime.strptime(date, "%Y-%m-%d").strftime("%d.%m.%Y"),
-            grp=web.app.groups.get()[group]["id"],
-            time=time,
-        )
-
-        logger.info(
-            "Создана новая запись в группе `%s`. name=%s, temperature=%s, date=%s, time=%s",
-            *(group, name, temperature, date, time),
-        )
-        tools.submit_form("addForm")
-
-    def global_add(self, name: str, temperature: float, date: str, group: str):
-        """
-        Добавляем запись в группе.
-        :param name: ФИО человека.
-        :param temperature: Температура.
-        :param date: Дата (в формате '%Y-%m-%d').
-        :param group: Группа, в которой создаётся запись.
-        """
-
-        logger.info("Запрос на создание записи в группе `%s`.", group)
-        tools.loading_modal("addModalBody")
-        time = datetime.now().strftime("%H:%M")
+        time = datetime.now().strftime("%H:%M")  # Текущее время
 
         self.thermometry_logs.insert(
             name=name,
@@ -127,7 +101,7 @@ class JSApi:
 
     def global_edit(self, name: str, temperature: float, date: str, group: str):
         """
-        Редактируем или добавляем запись в группе.
+        Редактирует или добавляет запись в группе.
         :param name: ФИО человека.
         :param temperature: Температура.
         :param date: Дата (в формате '%Y-%m-%d').
@@ -137,16 +111,18 @@ class JSApi:
         logger.info("Запрос на изменение записи в группе %s. name=`%s`.", group, name)
         tools.loading_modal("globalEditModalBody")
         date = datetime.strptime(date, "%Y-%m-%d")
-        group = web.app.groups.get()[group]
+        group = web.app.groups.get()[group]  # Нужная группа
         log: ThermometryLog = self.thermometry_logs.filter(
             date=datetime.now().strftime("%d.%m.%Y"),
             grp=group["id"],
             name=name,
             return_list=True,
-        )[0]
+        )[
+            0
+        ]  # Нужная запись
 
         if log:
-            if log.time == "0":
+            if log.time == "0":  # Если нет данных
                 log.update(
                     temperature=Float(temperature),
                     time=datetime.now().strftime("%H:%M"),
@@ -173,7 +149,7 @@ class JSApi:
 
     def import_logs(self, date: str, group: str):
         """
-        Импортируем записи.
+        Импортирует записи.
         :param date: Дата, на которую импортируются данные (В формате '%Y-%m-%d').
         :param group: Группа, в которую импортируются данные.
         """
@@ -214,10 +190,10 @@ class JSApi:
         template: bool,
     ):
         """
-        Экспорт записей в excel или csv.
-        :param file_type: Куда импортируем.
+        Экспортирует записи в excel или csv.
+        :param file_type: Куда импортирует.
         :param dates: Временные рамки (в формате '%Y-%m-%d').
-        :param group: Группа из которой импортируем данные.
+        :param group: Группа из которой импортирует данные.
         :param template: Для True - необходимо экспортировать данные как шаблон.
         """
 
@@ -260,12 +236,12 @@ class JSApi:
 
     def init_groups(self, groups: str, date: str):
         """
-        Инициализируем шаблоны групп.
+        Инициализирует шаблоны групп.
         :param groups: Названия групп через ';'.
         :param date: Дата, на которую идет инициализация (в формате '%Y-%m-%d').
         """
 
-        all_groups = web.app.groups.get()
+        all_groups = web.app.groups.get()  # Все группы
         for group in groups.split(";"):
             group = all_groups[group]
             csv_handler.import_data(
@@ -284,7 +260,7 @@ class JSApi:
     def sql(self) -> API:
         """ Получение нового API """
 
-        return API(DB_PATH)
+        return API(DB_PATH)  # Необходимо, так как sqlite3 не работает в разных потоках
 
     @property
     def thermometry_logs(self):
@@ -294,7 +270,9 @@ class JSApi:
     def thermometry_logs(self) -> ThermometryLog:
         """ Получение нового ThermometryLog """
 
-        return ThermometryLog(DB_PATH)
+        return ThermometryLog(
+            DB_PATH
+        )  # Необходимо, так как sqlite3 не работает в разных потоках
 
     def open_url(self, url: str):
         """ Открывает ссылку. """
@@ -305,7 +283,7 @@ class JSApi:
 
 def change_color_scheme(color_scheme: Literal["default", "light", "dark"]):
     """
-    Изменяем цветовую схему.
+    Изменяет цветовую схему.
     """
 
     logger.info("Запрос на изменение цветовой схемы.")
@@ -363,7 +341,9 @@ def delete_group(name: str):
 
     _id = web.app.groups.del_group(name)
     sql = js_api.sql
-    sql.execute("DELETE FROM thermometrylog WHERE grp=?", _id)
+    sql.execute(
+        "DELETE FROM thermometrylog WHERE grp=?", _id
+    )  # Удаляем все записи группы
     sql.commit()
     logger.info("Удалена группа `%s`", name)
 
@@ -372,7 +352,7 @@ def delete_group(name: str):
 
 def edit_group(old_name: str, new_name: str):
     """
-    Изменяем группу.
+    Изменяет группу.
     :param old_name: Старое название группы.
     :param new_name: Новое название группы.
     """
@@ -405,7 +385,7 @@ def edit_group(old_name: str, new_name: str):
 
 def get_group_members(name: str) -> list:
     """
-    Получаем участников группы
+    Возвращает участников группы.
     :param name: Название группы.
     :return: Список имён.
     """
@@ -449,7 +429,7 @@ def main() -> NoReturn:
     window.shown += _on_shown
 
     logger.info("Запуск окна.")
-    webview.start(_init, window, debug=True)
+    webview.start(_init, window)
 
 
 logger.info("Создание окна.")
