@@ -184,20 +184,22 @@ class JSApi:
 
         tools.submit_form("exportLogsForm")
 
-    def init_group_template(self, group: str, date: str):
+    def init_groups(self, groups: str, date: str):
         """
-        Инициализируем шаблон группы.
-        :param group: Группа.
+        Инициализируем шаблоны групп.
+        :param groups: Названия групп через ';'.
         :param date: Дата, на которую идет инициализация (в формате '%Y-%m-%d').
         """
 
-        group = web.app.groups.get()[group]
-        csv_handler.import_data(
-            filename=group["template"],
-            database=self.thermometry_logs,
-            date=date,
-            group=group["id"],
-        )
+        all_groups = web.app.groups.get()
+        for group in groups.split(";"):
+            group = all_groups[group]
+            csv_handler.import_data(
+                filename=group["template"],
+                database=self.thermometry_logs,
+                date=date,
+                group=group["id"],
+            )
         tools.submit_form("waitForm")
 
     @property

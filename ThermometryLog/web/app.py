@@ -20,6 +20,7 @@ from logger import logger, LOCAL_APPDATA
 logger.info("Создание веб-приложения.")
 DB_PATH: str = ...  # Путь к базе данных
 WINDOW: Window = ...  # Окно приложения
+FIRST_START = True  # Флаг, обозначающий, что приложение только что запустилось
 
 # Настройка окружения. (При сборке приложения)
 ROOT = os.path.abspath(__file__)
@@ -59,7 +60,23 @@ def home():
         date = datetime.strptime(request.args.get("date"), "%Y-%m-%d")
 
     group_name = request.args.get("group") or "Общая"
-    group = groups.get()[group_name]
+    all_groups = groups.get()
+    group = all_groups[group_name]
+
+    # Проверяем нужно ли инициализировать шаблоны групп
+    not_inited_groups = []
+    if FIRST_START:
+        for grp_name, grp in all_groups.items():
+            if grp["template"]:  # Если у группы есть шаблон
+                logs: List[ThermometryLog] = ThermometryLog(DB_PATH).filter(
+                    date=datetime.now().strftime("%d.%m.%Y"),
+                    return_list=True,
+                    grp=grp["id"],
+                )
+                if len(logs) == 0:
+                    not_inited_groups.append(grp_name)
+
+        globals()["FIRST_START"] = False
 
     WINDOW.set_title(f"Журнал термометрии - Группа: {group_name}")
 
@@ -69,11 +86,6 @@ def home():
         return_list=True,
         **({} if group["id"] == 0 else {"grp": group["id"]}),
     )
-
-    can_init = False
-    if len(logs) == 0 and group["template"]:
-        if date.strftime("%d.%m.%Y") == datetime.now().strftime("%d.%m.%Y"):
-            can_init = True
 
     if len(logs):
         average_temp = round(sum(map(lambda log: log.temperature, logs)) / len(logs), 1)
@@ -93,7 +105,7 @@ def home():
         date=date.strftime("%Y-%m-%d"),
         now_date=datetime.now().strftime("%Y-%m-%d"),
         group=group_name,
-        can_init=can_init,
+        not_inited_groups=";".join(not_inited_groups),
     )
 
 

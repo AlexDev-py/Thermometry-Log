@@ -34,6 +34,12 @@
     border: 3px solid var(--accent-color);
 }
 
+@media (min-width: 1024px) {
+    .lg\:inline-block {
+        display: inline-block!important;
+    }
+}
+
 html {
     background: var(--root-bg);
     overflow: auto;

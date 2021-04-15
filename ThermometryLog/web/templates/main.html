@@ -4,7 +4,7 @@
 <div style="display: inline-block;">
     <div class="mx-4 btn-toolbar" style="display: inline-flex">
         <form>
-            <p style="border-right: 1px solid var(--root-fg); padding-right: 1rem;"><strong>Дата:</strong> <input type="date" value="{{date}}" id="date"></p>
+            <p style="border-right: 1px solid var(--root-fg); padding-right: 1rem;"><strong class="lg:inline-block" style="display: none">Дата:</strong> <input type="date" value="{{date}}" id="date"></p>
             <script type="text/javascript">
                 let date = window.document.getElementById("date");
                 let olddate = date.value;
@@ -22,9 +22,10 @@
             </script>
         </form>
         <button class="btn button btn-sm" type="button" style="margin-left: 1rem; margin-bottom: 1rem;" data-bs-toggle="modal" data-bs-target="#addLogModal">
-            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-plus-circle-fill mr-2" viewBox="0 0 16 16">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="lg:inline-block bi bi-plus-circle-fill mr-2" viewBox="0 0 16 16" style="display: none">
                 <path d="M16 8A8 8 0 1 1 0 8a8 8 0 0 1 16 0zM8.5 4.5a.5.5 0 0 0-1 0v3h-3a.5.5 0 0 0 0 1h3v3a.5.5 0 0 0 1 0v-3h3a.5.5 0 0 0 0-1h-3v-3z"/>
-            </svg><label class="mx-2">Добавить</label>
+            </svg>
+            <label class="mx-2">Добавить</label>
         </button>
         <form class="search" style="margin-left: 1rem; margin-bottom: 1rem;" method="get" action="/search">
             <input type="hidden" name="date" value="{{date}}">
@@ -79,6 +80,41 @@
 {% endblock %}
 
 {% block body %}
+
+{% if not_inited_groups|length != 0 %}
+<div class="modal fade" id="waitModal" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content" style="background: var(--root-bg)">
+            <form id="waitForm" method="get">
+                <input type="hidden" name="date" value="{{date}}"/>
+                <input type="hidden" name="group" value="{{group}}"/>
+                <div class="modal-body text-center">
+                    <div class="d-flex justify-content-center py-5">
+                        <div class="spinner-border" role="status">
+                            <span class="visually-hidden">Loading...</span>
+                        </div>
+                        <p class="mx-2">инициализация групп</p>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+<script type="text/javascript">
+    document.addEventListener("DOMContentLoaded", function(event) {
+        var myModal = new bootstrap.Modal(document.getElementById('waitModal'), {
+            keyboard: false, backdrop: 'static'
+        });
+        myModal.show();
+    });
+</script>
+<script type="text/javascript">
+    window.addEventListener('pywebviewready', function() {
+        pywebview.api.init_groups('{{not_inited_groups}}', '{{date}}');
+    })
+</script>
+{% else %}
+
 <div id="menuButton">
     <svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" fill="currentColor" class="bi bi-list" viewBox="0 0 16 16">
         <path fill-rule="evenodd" d="M2.5 11.5A.5.5 0 0 1 3 11h10a.5.5 0 0 1 0 1H3a.5.5 0 0 1-.5-.5zm0-4A.5.5 0 0 1 3 7h10a.5.5 0 0 1 0 1H3a.5.5 0 0 1-.5-.5zm0-4A.5.5 0 0 1 3 3h10a.5.5 0 0 1 0 1H3a.5.5 0 0 1-.5-.5z"/>
@@ -207,39 +243,6 @@
         </tbody>
     </table>
     {% else %}
-    {% if can_init %}
-    <div class="modal fade" id="waitModal" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-hidden="true">
-        <div class="modal-dialog modal-dialog-centered">
-            <div class="modal-content" style="background: var(--root-bg)">
-                <form id="waitForm" method="get">
-                    <input type="hidden" name="date" value="{{date}}"/>
-                    <input type="hidden" name="group" value="{{group}}"/>
-                    <div class="modal-body text-center">
-                        <div class="d-flex justify-content-center py-5">
-                            <div class="spinner-border" role="status">
-                                <span class="visually-hidden">Loading...</span>
-                            </div>
-                            <p class="mx-2">инициализация шаблона группы</p>
-                        </div>
-                    </div>
-                </form>
-            </div>
-        </div>
-    </div>
-    <script type="text/javascript">
-        document.addEventListener("DOMContentLoaded", function(event) {
-            var myModal = new bootstrap.Modal(document.getElementById('waitModal'), {
-                keyboard: false, backdrop: 'static'
-            });
-            myModal.show();
-        });
-    </script>
-    <script type="text/javascript">
-        window.addEventListener('pywebviewready', function() {
-            pywebview.api.init_group_template('{{group}}', '{{date}}');
-        })
-    </script>
-    {% else %}
     <div class="container text-center ">
         <h1 class="mt-5">
             Нет записей на это число
@@ -255,7 +258,6 @@
             <button class="btn button" type="button" data-bs-toggle="modal" data-bs-target="#addLogModal">Добавить запись</button>
         </div>
     </div>
-    {% endif %}
     {% endif %}
 </div>
 
@@ -496,4 +498,5 @@
         </div>
     </div>
 </div>
+{% endif %}
 {% endblock %}
