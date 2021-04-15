@@ -113,7 +113,7 @@ class JSApi:
         date = datetime.strptime(date, "%Y-%m-%d")
         group = web.app.groups.get()[group]  # Нужная группа
         log: ThermometryLog = self.thermometry_logs.filter(
-            date=datetime.now().strftime("%d.%m.%Y"),
+            date=date.strftime("%d.%m.%Y"),
             grp=group["id"],
             name=name,
             return_list=True,
@@ -324,7 +324,14 @@ def add_group(name: str):
             file = None
             logger.info("Шаблон не выбран.")
 
-        web.app.groups.add_group(name, file)
+        group_id = web.app.groups.add_group(name, file)
+        if file:
+            csv_handler.import_data(
+                filename=file,
+                database=js_api.thermometry_logs,
+                date=datetime.now().strftime("%Y-%m-%d"),
+                group=group_id,
+            )  # Инициализируем шаблон
         logger.info("Создана группа. name=%s, template=%s", name, file)
 
     tools.submit_form("addForm")
