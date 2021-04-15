@@ -20,7 +20,6 @@ from logger import logger, LOCAL_APPDATA
 logger.info("Создание веб-приложения.")
 DB_PATH: str = ...  # Путь к базе данных
 WINDOW: Window = ...  # Окно приложения
-FIRST_START = True  # Флаг, обозначающий, что приложение только что запустилось
 
 # Настройка окружения. (При сборке приложения)
 ROOT = os.path.abspath(__file__)
@@ -68,23 +67,6 @@ def home():
         grp_name for grp_name, grp in all_groups.items() if grp["template"]
     ]  # Названия групп, к которым подключен шаблон
 
-    # Проверяем нужно ли инициализировать шаблоны групп
-    not_inited_groups = (
-        []
-    )  # Группы, в которых не инициализирован шаблон, на сегодняшнее число
-    if FIRST_START:
-        for grp_name, grp in all_groups.items():
-            if grp["template"]:  # Если у группы есть шаблон
-                logs: List[ThermometryLog] = ThermometryLog(DB_PATH).filter(
-                    date=datetime.now().strftime("%d.%m.%Y"),
-                    return_list=True,
-                    grp=grp["id"],
-                )
-                if len(logs) == 0:
-                    not_inited_groups.append(grp_name)
-
-        globals()["FIRST_START"] = False
-
     WINDOW.set_title(f"Журнал термометрии - Группа: {group_name}")
 
     logger.info("Получение записей.")
@@ -118,7 +100,6 @@ def home():
         now_date=datetime.now().strftime("%Y-%m-%d"),
         group=group_name,
         groups=all_group_names,
-        not_inited_groups=";".join(not_inited_groups),
     )
 
 
@@ -227,3 +208,25 @@ def webview2():
     """
 
     return render_template("webview2.html", color_scheme=settings["color_scheme"])
+
+
+@app.route("/start")
+def start():
+    # Проверяем нужно ли инициализировать шаблоны групп
+    all_groups = groups.get()  # Все группы
+    # Группы, в которых не инициализирован шаблон, на сегодняшнее число
+    not_inited_groups = []
+    for grp_name, grp in all_groups.items():
+        if grp["template"]:  # Если у группы есть шаблон
+            logs: List[ThermometryLog] = ThermometryLog(DB_PATH).filter(
+                date=datetime.now().strftime("%d.%m.%Y"),
+                return_list=True,
+                grp=grp["id"],
+            )
+            if len(logs) == 0:
+                not_inited_groups.append(grp_name)
+
+    return render_template(
+        "start.html",
+        not_inited_groups=";".join(not_inited_groups),
+    )

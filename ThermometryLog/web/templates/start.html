@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html lang="en" style="background: #100F10; color: #fff;">
+<head>
+    <meta charset="UTF-8">
+</head>
+<body class="pywebview-drag-region">
+    <div style="text-align: center">
+        <img draggable="false" src="{{url_for('static', filename='loading.gif')}}" alt="starting"><br>
+        <strong style="font-family: 'Comic Sans MS'">by AlexDev</strong>
+    </div>
+    <script type="text/javascript">
+        window.addEventListener('pywebviewready', function() {
+            pywebview.api.init_groups('{{not_inited_groups}}').then(function(resp) {
+                setTimeout(function() {
+                    pywebview.api._run();
+                }, 900);
+            });
+        })
+    </script>
+</body>
+</html>

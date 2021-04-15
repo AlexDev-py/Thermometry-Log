@@ -233,23 +233,22 @@ class JSApi:
 
         tools.submit_form("exportLogsForm")
 
-    def init_groups(self, groups: str, date: str):
+    def init_groups(self, groups: str):
         """
         Инициализирует шаблоны групп.
         :param groups: Названия групп через ';'.
-        :param date: Дата, на которую идет инициализация (в формате '%Y-%m-%d').
         """
 
         all_groups = web.app.groups.get()  # Все группы
-        for group in groups.split(";"):
-            group = all_groups[group]
-            csv_handler.import_data(
-                filename=group["template"],
-                database=self.thermometry_logs,
-                date=date,
-                group=group["id"],
-            )
-        tools.submit_form("waitForm")
+        if len(groups):
+            for group in groups.split(";"):
+                group = all_groups[group]
+                csv_handler.import_data(
+                    filename=group["template"],
+                    database=self.thermometry_logs,
+                    date=datetime.now().strftime("%Y-%m-%d"),
+                    group=group["id"],
+                )
 
     @property
     def sql(self):
@@ -417,6 +416,7 @@ def main() -> NoReturn:
 
     def _init(win: webview.Window):
         js_api.real_url = win.real_url
+        win.load_url(f"{win.real_url}/start")
 
     def _on_loaded():
         logger.info("Загружена страница `%s`", window.get_current_url())
@@ -429,13 +429,44 @@ def main() -> NoReturn:
         if not tools.check_webview2():
             js_api.open_url("/webview2")
 
-    # Добавляем обработчики событий
-    window.loaded += _on_loaded
-    window.closed += _on_closed
-    window.shown += _on_shown
+    def _run():
+        globals()["window"] = web.app.WINDOW = tools.WINDOW = webview.create_window(
+            "Журнал термометрии",
+            web.app.app,
+            width=1080,
+            height=720,
+            easy_drag=False,
+            js_api=js_api,
+            min_size=(940, 570),
+        )
+
+        # Добавляем дополнительные методы к JSApi
+        window.expose(
+            change_color_scheme, add_group, delete_group, edit_group, get_group_members
+        )
+
+        # Добавляем обработчики событий
+        window.loaded += _on_loaded
+        window.closed += _on_closed
+        window.shown += _on_shown
+
+        start_window.destroy()  # Закрываем стартовое окно
+
+    start_window = webview.create_window(
+        "Журнал термометрии",
+        web.app.app,
+        width=150,
+        height=200,
+        easy_drag=True,
+        frameless=True,
+        resizable=False,
+        js_api=js_api,
+        min_size=(100, 100),
+    )  # Стартовое окно
+    start_window.expose(_run)  # Добавляем методы к JSApi
 
     logger.info("Запуск окна.")
-    webview.start(_init, window)
+    webview.start(_init, start_window)
 
 
 logger.info("Создание окна.")
@@ -443,19 +474,7 @@ js_api = tools.js_api = JSApi()
 DB_PATH = rf"{LOCAL_APPDATA}\database.sqlite"  # Путь к базе данных
 web.app.DB_PATH = DB_PATH
 
-window = web.app.WINDOW = tools.WINDOW = webview.create_window(
-    "Журнал термометрии",
-    web.app.app,
-    width=1080,
-    height=720,
-    easy_drag=False,
-    js_api=js_api,
-    min_size=(940, 570),
-)
-# Добавляем дополнительные методы к JSApi
-window.expose(
-    change_color_scheme, add_group, delete_group, edit_group, get_group_members
-)
+window = web.app.WINDOW = tools.WINDOW = ...
 
 if __name__ == "__main__":
     main()
