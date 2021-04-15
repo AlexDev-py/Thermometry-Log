@@ -205,7 +205,7 @@
                     </div>
                     {{log.date}}{% if log.time != '0' %} {{log.time}}{% endif %}
                 </td>
-                <td>{{log.name}}</td>
+                <td id="nameEl" onclick="navigator.clipboard.writeText(this.dataset.name);" data-name="{{log.name}}">{{log.name}}</td>
                 <td>
                     {% if log.temperature == 0 %}
                     <div data-name="{{log.name}}" data-temp="{{log.temperature}}" data-log-id="{{log.id}}" data-bs-toggle="modal" data-bs-target="#editLogModal">
