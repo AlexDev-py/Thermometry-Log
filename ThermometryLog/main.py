@@ -10,6 +10,7 @@
 import json
 from datetime import datetime, timedelta
 from typing import NoReturn, Literal, Tuple
+import csv
 
 import webview
 from sqlite3_api import API
@@ -96,6 +97,79 @@ class JSApi:
             *(group, name, temperature, date, time),
         )
         tools.submit_form("addForm")
+
+    def global_add(self, name: str, temperature: float, date: str, group: str):
+        """
+        Добавляем запись в группе.
+        :param name: ФИО человека.
+        :param temperature: Температура.
+        :param date: Дата (в формате '%Y-%m-%d').
+        :param group: Группа, в которой создаётся запись.
+        """
+
+        logger.info("Запрос на создание записи в группе `%s`.", group)
+        tools.loading_modal("addModalBody")
+        time = datetime.now().strftime("%H:%M")
+
+        self.thermometry_logs.insert(
+            name=name,
+            temperature=Float(temperature),
+            date=datetime.strptime(date, "%Y-%m-%d").strftime("%d.%m.%Y"),
+            grp=web.app.groups.get()[group]["id"],
+            time=time,
+        )
+
+        logger.info(
+            "Создана новая запись в группе `%s`. name=%s, temperature=%s, date=%s, time=%s",
+            *(group, name, temperature, date, time),
+        )
+        tools.submit_form("addForm")
+
+    def global_edit(self, name: str, temperature: float, date: str, group: str):
+        """
+        Редактируем или добавляем запись в группе.
+        :param name: ФИО человека.
+        :param temperature: Температура.
+        :param date: Дата (в формате '%Y-%m-%d').
+        :param group: Группа, в которой редактируется/создаётся запись.
+        """
+
+        logger.info("Запрос на изменение записи в группе %s. name=`%s`.", group, name)
+        tools.loading_modal("globalEditModalBody")
+        date = datetime.strptime(date, "%Y-%m-%d")
+        group = web.app.groups.get()[group]
+        log: ThermometryLog = self.thermometry_logs.filter(
+            date=datetime.now().strftime("%d.%m.%Y"),
+            grp=group["id"],
+            name=name,
+            return_list=True,
+        )[0]
+
+        if log:
+            if log.time == "0":
+                log.update(
+                    temperature=Float(temperature),
+                    time=datetime.now().strftime("%H:%M"),
+                )
+                logger.info(
+                    "Изменена запись в группе %s. данные: name=%s, temperature=%s",
+                    *(group["id"], name, temperature),
+                )
+                return tools.submit_form("globalEditForm")
+
+        self.thermometry_logs.insert(
+            name=name,
+            temperature=Float(temperature),
+            date=date.strftime("%d.%m.%Y"),
+            grp=group["id"],
+            time=datetime.now().strftime("%H:%M"),
+        )
+        logger.info(
+            "Создана новая запись в группе `%s`. name=%s, temperature=%s, date=%s",
+            *(group, name, temperature, date),
+        )
+
+        tools.submit_form("globalEditForm")
 
     def import_logs(self, date: str, group: str):
         """
@@ -329,6 +403,26 @@ def edit_group(old_name: str, new_name: str):
     tools.submit_form("editForm")
 
 
+def get_group_members(name: str) -> list:
+    """
+    Получаем участников группы
+    :param name: Название группы.
+    :return: Список имён.
+    """
+
+    names = []
+    group = web.app.groups.get()[name]
+    if group["template"]:
+        with open(group["template"], encoding="utf-8-sig") as csv_file:
+            reader = csv.reader(csv_file)
+            for row in reader:
+                if len(name := row[2]) != 0:
+                    if name not in names:
+                        names.append(name)
+
+    return names
+
+
 def main() -> NoReturn:
     """ Запуск окна. """
 
@@ -373,7 +467,9 @@ window = web.app.WINDOW = tools.WINDOW = webview.create_window(
     min_size=(940, 570),
 )
 # Добавляем дополнительные методы к JSApi
-window.expose(change_color_scheme, add_group, delete_group, edit_group)
+window.expose(
+    change_color_scheme, add_group, delete_group, edit_group, get_group_members
+)
 
 if __name__ == "__main__":
     main()

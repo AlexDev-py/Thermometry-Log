@@ -62,6 +62,9 @@ def home():
     group_name = request.args.get("group") or "Общая"
     all_groups = groups.get()
     group = all_groups[group_name]
+    all_group_names = [
+        grp_name for grp_name, grp in all_groups.items() if grp["template"]
+    ]
 
     # Проверяем нужно ли инициализировать шаблоны групп
     not_inited_groups = []
@@ -88,6 +91,7 @@ def home():
     )
 
     if len(logs):
+        # TODO: нули учавствуют в подстчете.
         average_temp = round(sum(map(lambda log: log.temperature, logs)) / len(logs), 1)
         min_temp = min(logs, key=lambda x: x.temperature).temperature
         max_temp = max(logs, key=lambda x: x.temperature).temperature
@@ -105,6 +109,7 @@ def home():
         date=date.strftime("%Y-%m-%d"),
         now_date=datetime.now().strftime("%Y-%m-%d"),
         group=group_name,
+        groups=all_group_names,
         not_inited_groups=";".join(not_inited_groups),
     )
 
