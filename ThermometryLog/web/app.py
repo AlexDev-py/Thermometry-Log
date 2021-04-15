@@ -91,10 +91,12 @@ def home():
     )
 
     if len(logs):
-        # TODO: нули учавствуют в подстчете.
-        average_temp = round(sum(map(lambda log: log.temperature, logs)) / len(logs), 1)
-        min_temp = min(logs, key=lambda x: x.temperature).temperature
-        max_temp = max(logs, key=lambda x: x.temperature).temperature
+        no_zero = list(filter(lambda log: log.temperature != 0, logs))
+        average_temp = round(
+            sum(map(lambda log: log.temperature, no_zero)) / len(no_zero), 1
+        )
+        min_temp = min(no_zero, key=lambda x: x.temperature).temperature
+        max_temp = max(no_zero, key=lambda x: x.temperature).temperature
     else:
         average_temp = min_temp = max_temp = 0
 
@@ -175,13 +177,12 @@ def search():
     )
 
     if len(result["fullmatch"]):
+        no_zero = list(filter(lambda lg: lg.temperature != 0, result["fullmatch"]))
         average_temp = round(
-            sum(map(lambda lg: lg.temperature, result["fullmatch"]))
-            / len(result["fullmatch"]),
-            1,
+            sum(map(lambda lg: lg.temperature, no_zero)) / len(no_zero), 1
         )
-        min_temp = min(result["fullmatch"], key=lambda lg: lg.temperature).temperature
-        max_temp = max(result["fullmatch"], key=lambda lg: lg.temperature).temperature
+        min_temp = min(no_zero, key=lambda lg: lg.temperature).temperature
+        max_temp = max(no_zero, key=lambda lg: lg.temperature).temperature
     else:
         average_temp = min_temp = max_temp = 0
 
