@@ -4,14 +4,14 @@
 Импорт и экспорт данных.
 
 Обрабатываются листы вида:
-|   Журнал термометрии на <date>   |
-| ФИО    | Температура    | Время  |
-| <name> | <temperature>  | <time> |
-| <name> | <temperature>  | <time> |
-| <name> | <temperature>  | <time> |
+|   Журнал термометрии в группе <group>    |
+| ФИО    |     <date>     |     <date>     |
+| <name> | <temperature>  | <temperature>  |
+| <name> | <temperature>  | <temperature>  |
+| <name> | <temperature>  | <temperature>  |
 ...
 
-Названием листа должна являться дата.
+Название листа - название группы.
 
 """
 
@@ -35,37 +35,28 @@ def import_data(filename: str, database: ThermometryLog, group: int = 0):
 
     logger.info("Загрузка книги.")
     workbook = openpyxl.load_workbook(filename)  # Открываем книгу
+    sheet = workbook[workbook.sheetnames[0]]  # Выбираем лист
 
     logger.info("Импорт записей.")
-    for sheet_name in workbook.sheetnames:
-        try:  # Валидация поля `date`
-            date = datetime.strptime(sheet_name, "%d.%m.%Y")
-        except ValueError:
+    rows = sheet.max_row  # Кол-во строк в таблице
+    cols = sheet.max_column  # Кол-во колонок в таблице
+
+    if rows < 3 or cols < 2:
+        return
+
+    for i in range(3, rows + 1):
+        # Валидация поля `name`
+        if len(name := sheet.cell(i, 1).value) == 0:
             continue
-
-        sheet = workbook[sheet_name]  # Выбираем лист
-        rows = sheet.max_row  # Кол-во строк в таблице
-        cols = sheet.max_column  # Кол-во колонок в таблице
-
-        if rows <= 2 or cols != 3:
-            continue
-
-        for i in range(3, rows + 1):
-            # Валидация поля `name`
-            if len(name := sheet.cell(i, 1).value) == 0:
-                continue
+        for j in range(2, cols + 1):
             try:  # Валидация поля `temperature`
-                temperature = float(sheet.cell(i, 2).value)
+                temperature = float(sheet.cell(i, j).value)
+                if temperature == 0:
+                    continue
             except ValueError:
                 continue
-            try:  # Валидация поля `time`
-                if sheet.cell(i, 3).value == "0":
-                    time = 0
-                else:
-                    time = [int(x) for x in sheet.cell(i, 3).value.split(":")]
-                    if len(time) != 2:
-                        raise ValueError
-                    time = ":".join(map(str, time))
+            try:  # Валидация поля `date`
+                date = datetime.strptime(sheet.cell(2, j).value, "%d.%m.%Y")
             except ValueError:
                 continue
 
@@ -75,7 +66,7 @@ def import_data(filename: str, database: ThermometryLog, group: int = 0):
                 temperature=Float(round(temperature, 1)),
                 date=date.strftime("%d.%m.%Y"),
                 grp=group,
-                time=time,
+                time=datetime.now().strftime("%H:%M"),
             )
     database.commit()
 
@@ -99,29 +90,38 @@ def export_data(
     workbook.remove(workbook["Sheet"])  # Удаляем начальный лист
 
     logger.info("Заполнение книги.")
-    for date in dates:
-        data: List[ThermometryLog] = database.filter(
-            return_list=True,
-            date=date,
-            **({} if group[0] == 0 else {"grp": group[0]}),
-        )
+    logs: List[Tuple[int, str, float, str, int, str]] = database.sql.filter(
+        database.table_name,
+        date_egt=dates[0],
+        date_elt=dates[-1],
+        **({} if group[0] == 0 else {"grp": group[0]}),
+    )
+    data = {}  # {'<name>': {'<date>': <temperature>, ...}, ...}
+    for obj in logs:
+        if obj[1] not in data:
+            data[obj[1]] = {}
+        data[obj[1]][obj[3]] = obj[2]
 
-        if len(data) == 0:
+    sheet = workbook.create_sheet(group[1])  # Новый лист
+    # Заполняем ячейки
+    sheet["A1"] = f"Журнал термометрии в группе `{group[1]}`"
+    sheet["A1"].font = Font(bold=True)
+    sheet["A1"].alignment = Alignment(horizontal="center")
+    sheet.append(["ФИО", *dates])
+    # Размер колонок
+    sheet.column_dimensions["A"].width = 18
+    columns = [sheet.cell(1, x).coordinate for x in range(2, len(dates) + 2)]
+    for column in columns:
+        sheet.column_dimensions[column[0]].width = 12
+    # Объединяем ячейки
+    sheet.merge_cells(f"A1:{columns[-1]}")
+
+    for name in data:
+        if len(name) == 0:
             continue
-
-        sheet = workbook.create_sheet(date)  # Новый лист
-        # Размер колонок
-        sheet.column_dimensions["A"].width = 36
-        sheet.column_dimensions["B"].width = 12
-        sheet.column_dimensions["C"].width = 12
-        # Объединяем ячейки A1 - C1
-        sheet.merge_cells("A1:C1")
-        # Заполняем ячейки
-        sheet["A1"] = f"Журнал термометрии на {date} в группе `{group[1]}`"
-        sheet["A1"].font = Font(bold=True)
-        sheet["A1"].alignment = Alignment(horizontal="center")
-        sheet.append(["ФИО", "Температура", "Время"])
-        for obj in data:
-            sheet.append([obj.name, obj.temperature, obj.time])
+        temperatures = [
+            (0 if date not in data[name] else data[name][date]) for date in dates
+        ]
+        sheet.append([name, *temperatures])
 
     workbook.save(filename)  # Сохраняем в файл

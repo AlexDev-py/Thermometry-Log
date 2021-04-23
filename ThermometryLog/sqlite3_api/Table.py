@@ -188,6 +188,14 @@ class Table(object):
 
         return type(self).__name__.lower()
 
+    @property
+    def sql(self):
+        """ sqlite3_api.API """
+
+    @sql.getter
+    def sql(self):
+        return self.__api
+
     def __repr__(self):
         return "{table_name} OBJECT\n{fields}".format(
             table_name=self.table_name.upper(),
