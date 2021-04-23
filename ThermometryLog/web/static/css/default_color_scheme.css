@@ -1,9 +1,9 @@
 :root {
-    --root-bg: radial-gradient(#404F7F, #334069);
-    --root-fg: #FFFFFF;
-    --header-fg: #FFFFFF;
-    --accent-gradient-color: linear-gradient(175deg, rgba(147,144,250,1) 0%, rgba(80,73,162,1) 100%);
-    --accent-color: rgba(147,144,250,1);
-    --search-filed-bg: linear-gradient(328deg, rgba(62,76,124,1) 0%, rgba(56,68,111,1) 100%);
-    --secondary-gradient-color: radial-gradient(#2D375C, #242D4D);
+    --root-bg: radial-gradient(#404F7F, #334069); /* Цвет фона */
+    --root-fg: #FFFFFF; /* Цвет основного текста */
+    --header-fg: #FFFFFF; /* Цвет текста на панели управления */
+    --accent-gradient-color: linear-gradient(175deg, rgba(147,144,250,1) 0%, rgba(80,73,162,1) 100%); /* Цвет кнопок */
+    --accent-color: rgba(147,144,250,1); /* Цвет меню */
+    --search-filed-bg: linear-gradient(328deg, rgba(62,76,124,1) 0%, rgba(56,68,111,1) 100%); /* Цвет поля поиска */
+    --secondary-gradient-color: radial-gradient(#2D375C, #242D4D); /* Цвет панели управления */
 }
