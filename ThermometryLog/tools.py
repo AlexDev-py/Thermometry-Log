@@ -75,13 +75,13 @@ def check_webview2() -> Union["True", "False"]:
 
     if platform.architecture()[0] == "64bit":
         webview2_status = _cmd(
-            "reg flags HKEY_LOCAL_MACHINE\SOFTWARE\WOW6432Node\Microsoft"
-            "\EdgeUpdate\Clients\{F3017226-FE2A-4295-8BDF-00C3A9A7E4C5}"
+            r"reg flags HKEY_LOCAL_MACHINE\SOFTWARE\WOW6432Node"
+            r"\Microsoft\EdgeUpdate\Clients\{F3017226-FE2A-4295-8BDF-00C3A9A7E4C5}"
         )
     else:
         webview2_status = _cmd(
-            "reg flags HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\
-            EdgeUpdate\Clients\{F3017226-FE2A-4295-8BDF-00C3A9A7E4C5}"
+            r"reg flags HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft"
+            r"\EdgeUpdate\Clients\{F3017226-FE2A-4295-8BDF-00C3A9A7E4C5}"
         )
 
     if webview2_status == "":

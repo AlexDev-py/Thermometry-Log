@@ -396,6 +396,9 @@ def get_group_members(name: str) -> list:
     """
 
     names = []
+    if len(name) == 0:
+        return names
+
     group = web.app.groups.get()[name]
     if group["template"]:
         with open(group["template"], encoding="utf-8-sig") as csv_file:
@@ -466,7 +469,7 @@ def main() -> NoReturn:
     start_window.expose(_run)  # Добавляем методы к JSApi
 
     logger.info("Запуск окна.")
-    webview.start(_init, start_window)
+    webview.start(_init, start_window, debug=True)
 
 
 logger.info("Создание окна.")
