@@ -469,7 +469,7 @@ def main() -> NoReturn:
     start_window.expose(_run)  # Добавляем методы к JSApi
 
     logger.info("Запуск окна.")
-    webview.start(_init, start_window, debug=True)
+    webview.start(_init, start_window)
 
 
 logger.info("Создание окна.")

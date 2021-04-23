@@ -58,7 +58,7 @@ SectionEnd
 
 Section "Журнал термометрии" SEC01
   SetOutPath "$INSTDIR"
-  SetOverwrite try
+  SetOverwrite on
   File "build\ThermometryLog\csv_handler.py"
   File "build\ThermometryLog\database.py"
   File "build\ThermometryLog\excel.py"
@@ -184,7 +184,6 @@ Section "Журнал термометрии" SEC01
   File "build\ThermometryLog\web\static\css\light_color_scheme.css"
   File "build\ThermometryLog\web\static\css\main.css"
   SetOutPath "$INSTDIR\web\static"
-  File "build\ThermometryLog\web\static\logo.png"
   File "build\ThermometryLog\web\static\loading.gif"
   SetOutPath "$INSTDIR\web\templates"
   File "build\ThermometryLog\web\templates\base.html"
@@ -205,7 +204,7 @@ Section "Журнал термометрии" SEC01
   File "build\ThermometryLog\__pycache__\main.cpython-38.pyc"
   File "build\ThermometryLog\__pycache__\tools.cpython-38.pyc"
   SetOutPath "$LocalAppData\ThermometryLog"
-  SetOverwrite ifnewer
+  SetOverwrite off
   File "build\sources\database.sqlite"
   File "build\sources\groups.json"
   File "build\sources\logs.log"
