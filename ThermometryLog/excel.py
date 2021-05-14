@@ -66,7 +66,7 @@ def import_data(filename: str, database: ThermometryLog, group: int = 0):
                 temperature=Float(round(temperature, 1)),
                 date=date.strftime("%d.%m.%Y"),
                 grp=group,
-                time=datetime.now().strftime("%H:%M"),
+                arrival_time=datetime.now().strftime("%H:%M"),
             )
     database.commit()
 

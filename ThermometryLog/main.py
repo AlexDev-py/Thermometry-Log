@@ -23,6 +23,12 @@ from logger import logger, LOCAL_APPDATA
 from sqlite3_api import API
 
 
+def get_now_time():
+    """ Возвращает текущее время. """
+
+    return datetime.now().strftime("%H:%M")
+
+
 class JSApi:
     """
     Методы, которые будут доступны для использования из JavaScript`а.
@@ -48,27 +54,32 @@ class JSApi:
         logger.info("Удалена запись `%s` .", log_id)
         tools.submit_form("deleteForm")
 
-    def edit_log(self, log_id: int, name: str, temperature: float):
+    def edit_log(self, log_id: int, name: str, temperature: float, leaving_time: str):
         """
         Изменяет запись под номером `log_id`.
         :param log_id: ID записи, которую нужно изменить.
         :param name: Новое значение для поля `name`.
         :param temperature: Новое значение для поля `temperature`.
+        :param leaving_time: Время ухода.
         """
 
         logger.info("Запрос на изменение записи `%s`.", log_id)
         tools.loading_modal("editModalBody")
+        leaving_time = 0 if leaving_time == "00:00" else leaving_time
 
         log = self.thermometry_logs.filter(id=log_id)
         log.update(
             name=name,
             temperature=Float(temperature),
-            time=log.time if log.time != "0" else datetime.now().strftime("%H:%M"),
+            arrival_time=log.arrival_time
+            if log.arrival_time != "0"
+            else datetime.now().strftime("%H:%M"),
+            leaving_time=leaving_time,
         )
 
         logger.info(
-            "Изменена запись `%s`. новые данные: name=%s, temperature=%s",
-            *(log_id, name, temperature),
+            "Изменена запись `%s`. новые данные: name=%s, temperature=%s, leaving_time=%s",
+            *(log_id, name, temperature, leaving_time),
         )
         tools.submit_form("editForm")
 
@@ -83,19 +94,20 @@ class JSApi:
 
         logger.info("Запрос на создание записи в группе `%s`.", group)
         tools.loading_modal("addModalBody")
-        time = datetime.now().strftime("%H:%M")  # Текущее время
+        arrival_time = datetime.now().strftime("%H:%M")  # Текущее время
 
         self.thermometry_logs.insert(
             name=name,
             temperature=Float(temperature),
             date=datetime.strptime(date, "%Y-%m-%d").strftime("%d.%m.%Y"),
             grp=web.app.groups.get()[group]["id"],
-            time=time,
+            arrival_time=arrival_time,
         )
 
         logger.info(
-            "Создана новая запись в группе `%s`. name=%s, temperature=%s, date=%s, time=%s",
-            *(group, name, temperature, date, time),
+            "Создана новая запись в группе `%s`. "
+            "name=%s, temperature=%s, date=%s, arrival_time=%s",
+            *(group, name, temperature, date, arrival_time),
         )
         tools.submit_form("addForm")
 
@@ -121,10 +133,10 @@ class JSApi:
 
         if len(log) == 1:
             log: ThermometryLog = log[0]  # Нужная запись
-            if log.time == "0":  # Если нет данных
+            if log.arrival_time == "0":  # Если нет данных
                 log.update(
                     temperature=Float(temperature),
-                    time=datetime.now().strftime("%H:%M"),
+                    arrival_time=datetime.now().strftime("%H:%M"),
                 )
                 logger.info(
                     "Изменена запись в группе %s. данные: name=%s, temperature=%s",
@@ -137,7 +149,7 @@ class JSApi:
             temperature=Float(temperature),
             date=date.strftime("%d.%m.%Y"),
             grp=group["id"],
-            time=datetime.now().strftime("%H:%M"),
+            arrival_time=datetime.now().strftime("%H:%M"),
         )
         logger.info(
             "Создана новая запись в группе `%s`. name=%s, temperature=%s, date=%s",
@@ -404,7 +416,7 @@ def get_group_members(name: str) -> list:
         with open(group["template"], encoding="utf-8-sig") as csv_file:
             reader = csv.reader(csv_file)
             for row in reader:
-                if len(name := row[2]) != 0:
+                if len(name := row[3]) != 0:
                     if name not in names:
                         names.append(name)
 
@@ -445,7 +457,12 @@ def main() -> NoReturn:
 
         # Добавляем дополнительные методы к JSApi
         window.expose(
-            change_color_scheme, add_group, delete_group, edit_group, get_group_members
+            change_color_scheme,
+            add_group,
+            delete_group,
+            edit_group,
+            get_group_members,
+            get_now_time,
         )
 
         # Добавляем обработчики событий

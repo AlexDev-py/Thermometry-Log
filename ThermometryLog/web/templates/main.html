@@ -185,6 +185,7 @@
                 <th scope="col"><strong>Дата измерения</strong></th>
                 <th scope="col"><strong>ФИО человека</strong></th>
                 <th scope="col"><strong>Температура</strong></th>
+                <th scope="col"><strong>Время ухода</strong></th>
             </tr>
         </thead>
         <tbody>
@@ -197,18 +198,18 @@
                                 <path d="M2.037 3.225A.703.703 0 0 1 2 3c0-1.105 2.686-2 6-2s6 .895 6 2a.702.702 0 0 1-.037.225l-1.684 10.104A2 2 0 0 1 10.305 15H5.694a2 2 0 0 1-1.973-1.671L2.037 3.225zm9.89-.69C10.966 2.214 9.578 2 8 2c-1.58 0-2.968.215-3.926.534-.477.16-.795.327-.975.466.18.14.498.307.975.466C5.032 3.786 6.42 4 8 4s2.967-.215 3.926-.534c.477-.16.795-.327.975-.466-.18-.14-.498-.307-.975-.466z"/>
                             </svg>
                         </button>
-                        <button type="button" class="btn btn-sm btn-outline" data-name="{{log.name}}" data-temp="{{log.temperature}}" data-log-id="{{log.id}}" data-bs-toggle="modal" data-bs-target="#editLogModal">
+                        <button type="button" class="btn btn-sm btn-outline" data-name="{{log.name}}" data-temp="{{log.temperature}}" data-log-id="{{log.id}}" data-leaving-time="{{log.leaving_time}}" data-bs-toggle="modal" data-bs-target="#editLogModal">
                             <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-pencil-fill" viewBox="0 0 16 16">
                                 <path d="M12.854.146a.5.5 0 0 0-.707 0L10.5 1.793 14.207 5.5l1.647-1.646a.5.5 0 0 0 0-.708l-3-3zm.646 6.061L9.793 2.5 3.293 9H3.5a.5.5 0 0 1 .5.5v.5h.5a.5.5 0 0 1 .5.5v.5h.5a.5.5 0 0 1 .5.5v.5h.5a.5.5 0 0 1 .5.5v.207l6.5-6.5zm-7.468 7.468A.5.5 0 0 1 6 13.5V13h-.5a.5.5 0 0 1-.5-.5V12h-.5a.5.5 0 0 1-.5-.5V11h-.5a.5.5 0 0 1-.5-.5V10h-.5a.499.499 0 0 1-.175-.032l-.179.178a.5.5 0 0 0-.11.168l-2 5a.5.5 0 0 0 .65.65l5-2a.5.5 0 0 0 .168-.11l.178-.178z"/>
                             </svg>
                         </button>
                     </div>
-                    {{log.date}}{% if log.time != '0' %} {{log.time}}{% endif %}
+                    {{log.date}}{% if log.arrival_time != '0' %} {{log.arrival_time}}{% endif %}
                 </td>
-                <td id="nameEl" onclick="navigator.clipboard.writeText(this.dataset.name);" data-name="{{log.name}}">{{log.name}}</td>
+                <td onclick="navigator.clipboard.writeText(this.dataset.name);" data-name="{{log.name}}">{{log.name}}</td>
                 <td>
                     {% if log.temperature == 0 %}
-                    <div data-name="{{log.name}}" data-temp="{{log.temperature}}" data-log-id="{{log.id}}" data-bs-toggle="modal" data-bs-target="#editLogModal">
+                    <div data-name="{{log.name}}" data-log-id="{{log.id}}" data-leaving-time="{{log.leaving_time}}" data-bs-toggle="modal" data-bs-target="#editTempModal">
                         <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-clipboard-x" viewBox="0 0 16 16">
                             <path fill-rule="evenodd" d="M6.146 7.146a.5.5 0 0 1 .708 0L8 8.293l1.146-1.147a.5.5 0 1 1 .708.708L8.707 9l1.147 1.146a.5.5 0 0 1-.708.708L8 9.707l-1.146 1.147a.5.5 0 0 1-.708-.708L7.293 9 6.146 7.854a.5.5 0 0 1 0-.708z"/>
                             <path d="M4 1.5H3a2 2 0 0 0-2 2V14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V3.5a2 2 0 0 0-2-2h-1v1h1a1 1 0 0 1 1 1V14a1 1 0 0 1-1 1H3a1 1 0 0 1-1-1V3.5a1 1 0 0 1 1-1h1v-1z"/>
@@ -223,7 +224,7 @@
                         <path d="M5.5 2.5a2.5 2.5 0 0 1 5 0v7.55a3.5 3.5 0 1 1-5 0V2.5zM8 1a1.5 1.5 0 0 0-1.5 1.5v7.987l-.167.15a2.5 2.5 0 1 0 3.333 0l-.166-.15V2.5A1.5 1.5 0 0 0 8 1z"/>
                     </svg>
                     {% elif log.temperature <= 37 %}
-                    <svg id="temp-icon${log[0]}" xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-thermometer-half" viewBox="0 0 16 16">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-thermometer-half" viewBox="0 0 16 16">
                         <path d="M9.5 12.5a1.5 1.5 0 1 1-2-1.415V6.5a.5.5 0 0 1 1 0v4.585a1.5 1.5 0 0 1 1 1.415z"/>
                         <path d="M5.5 2.5a2.5 2.5 0 0 1 5 0v7.55a3.5 3.5 0 1 1-5 0V2.5zM8 1a1.5 1.5 0 0 0-1.5 1.5v7.987l-.167.15a2.5 2.5 0 1 0 3.333 0l-.166-.15V2.5A1.5 1.5 0 0 0 8 1z"/>
                     </svg>
@@ -244,6 +245,20 @@
                              aria-valuenow="{{(log.temperature - 30) * 10}}" aria-valuemin="32" aria-valuemax="40">
                         </div>
                     </div>
+                    {% endif %}
+                </td>
+                <td>
+                    {% if log.leaving_time == '0' %}
+                    <div data-name="{{log.name}}" data-temp="{{log.temperature}}" data-log-id="{{log.id}}" data-leaving-time="-1" data-bs-toggle="modal" data-bs-target="#{% if log.temperature > 0 %}editLeavingTimeModal{% else %}editLogModal{% endif %}">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-clipboard-x" viewBox="0 0 16 16">
+                            <path fill-rule="evenodd" d="M6.146 7.146a.5.5 0 0 1 .708 0L8 8.293l1.146-1.147a.5.5 0 1 1 .708.708L8.707 9l1.147 1.146a.5.5 0 0 1-.708.708L8 9.707l-1.146 1.147a.5.5 0 0 1-.708-.708L7.293 9 6.146 7.854a.5.5 0 0 1 0-.708z"/>
+                            <path d="M4 1.5H3a2 2 0 0 0-2 2V14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V3.5a2 2 0 0 0-2-2h-1v1h1a1 1 0 0 1 1 1V14a1 1 0 0 1-1 1H3a1 1 0 0 1-1-1V3.5a1 1 0 0 1 1-1h1v-1z"/>
+                            <path d="M9.5 1a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-3a.5.5 0 0 1-.5-.5v-1a.5.5 0 0 1 .5-.5h3zm-3-1A1.5 1.5 0 0 0 5 1.5v1A1.5 1.5 0 0 0 6.5 4h3A1.5 1.5 0 0 0 11 2.5v-1A1.5 1.5 0 0 0 9.5 0h-3z"/>
+                        </svg>
+                        Нет данных
+                    </div>
+                    {% else %}
+                    {{log.leaving_time}}
                     {% endif %}
                 </td>
             </tr>
@@ -305,6 +320,7 @@
         deleteLogModalBtn.dataset.logId = targetButton.dataset.logId;
     });
 </script>
+
 <div class="modal fade" id="editLogModal" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content" style="background: var(--root-bg)">
@@ -325,6 +341,10 @@
                             <label for="tempInput" class="form-label">Температура</label>
                             <input type="number" class="form-control" id="tempInput" step="0.1" max="40" min="32" required>
                         </div>
+                        <div class="mb-3">
+                            <label for="leavingTimeInput" class="form-label">Время ухода</label>
+                            <input type="time" step="60" value="00:00" class="form-control" id="leavingTimeInput" required>
+                        </div>
                     </div>
                     <div class="modal-footer">
                         <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Отмена</button>
@@ -333,7 +353,8 @@
                             document.getElementById('editLogModalBtn').onclick = function() {
                                 let nameInput = document.getElementById('nameInput');
                                 let tempInput = document.getElementById('tempInput');
-                                pywebview.api.edit_log(this.dataset.logId, nameInput.value, tempInput.value)
+                                let leavingTimeInput = document.getElementById('leavingTimeInput');
+                                pywebview.api.edit_log(this.dataset.logId, nameInput.value, tempInput.value, leavingTimeInput.value)
                             };
                         </script>
                     </div>
@@ -349,6 +370,15 @@
         let targetButton = event.relatedTarget;
         editLogModalBtn.dataset.logId = targetButton.dataset.logId;
         nameInput.value = targetButton.dataset.name;
+        if (targetButton.dataset.leavingTime == '-1') {
+            pywebview.api.get_now_time().then(function(now_time) {
+                leavingTimeInput.value = now_time;
+            });
+        } else if (targetButton.dataset.leavingTime != '0') {
+            leavingTimeInput.value = targetButton.dataset.leavingTime;
+        } else {
+            leavingTimeInput.value = '00:00';
+        };
         if (targetButton.dataset.temp > 0) {
             tempInput.value = targetButton.dataset.temp;
         } else {
@@ -356,6 +386,96 @@
         };
     });
 </script>
+<div class="modal fade" id="editTempModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content" style="background: var(--root-bg)">
+            <form id="editTempForm" method="get">
+                <input type="hidden" name="date" value="{{date}}"/>
+                <input type="hidden" name="group" value="{{group}}"/>
+                <div id="editTempModalBody">
+                    <div class="modal-header">
+                        <h5 class="modal-title">Запись температуры</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="mb-3">
+                            <label for="editTempInput" class="form-label">Температура</label>
+                            <input type="number" class="form-control" id="editTempInput" step="0.1" max="40" min="32" required>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Отмена</button>
+                        <button type="button" class="btn btn-success" id="editTempLogModalBtn" data-log-id="" data-name="" data-leaving-time="">Сохранить</button>
+                        <script type="text/javascript">
+                            document.getElementById('editTempLogModalBtn').onclick = function() {
+                                let editTempInput = document.getElementById('editTempInput');
+                                pywebview.api.edit_log(this.dataset.logId, this.dataset.name, editTempInput.value, this.dataset.leavingTime)
+                            };
+                        </script>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+<script type="text/javascript">
+    let editTempModal = document.getElementById('editTempModal');
+    let editTempLogModalBtn = document.getElementById('editTempLogModalBtn');
+    editTempModal.addEventListener('show.bs.modal', function (event) {
+        let targetButton = event.relatedTarget;
+        editTempLogModalBtn.dataset.logId = targetButton.dataset.logId;
+        editTempLogModalBtn.dataset.name = targetButton.dataset.name;
+        editTempLogModalBtn.dataset.leavingTime = targetButton.dataset.leavingTime;
+        editTempInput.value = 36.6;
+    });
+</script>
+<div class="modal fade" id="editLeavingTimeModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content" style="background: var(--root-bg)">
+            <form id="editLeavingTimeForm" method="get">
+                <input type="hidden" name="date" value="{{date}}"/>
+                <input type="hidden" name="group" value="{{group}}"/>
+                <div id="editLeavingTimeModalBody">
+                    <div class="modal-header">
+                        <h5 class="modal-title">Запись времени ухода</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="mb-3">
+                            <label for="editLeavingTimeInput" class="form-label">Время ухода</label>
+                            <input type="time" step="60" value="00:00" class="form-control" id="editLeavingTimeInput" required>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Отмена</button>
+                        <button type="button" class="btn btn-success" id="editLeavingTimeLogModalBtn" data-log-id="" data-name="" data-temp="">Сохранить</button>
+                        <script type="text/javascript">
+                            document.getElementById('editLeavingTimeLogModalBtn').onclick = function() {
+                                let editLeavingTimeInput = document.getElementById('editLeavingTimeInput');
+                                pywebview.api.edit_log(this.dataset.logId, this.dataset.name, this.dataset.temp, editLeavingTimeInput.value)
+                            };
+                        </script>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+<script type="text/javascript">
+    let editLeavingTimeModal = document.getElementById('editLeavingTimeModal');
+    let editLeavingTimeLogModalBtn = document.getElementById('editLeavingTimeLogModalBtn');
+    let editLeavingTimeInput = document.getElementById('editLeavingTimeInput');
+    editLeavingTimeModal.addEventListener('show.bs.modal', function (event) {
+        let targetButton = event.relatedTarget;
+        editLeavingTimeLogModalBtn.dataset.logId = targetButton.dataset.logId;
+        editLeavingTimeLogModalBtn.dataset.name = targetButton.dataset.name;
+        editLeavingTimeLogModalBtn.dataset.temp = targetButton.dataset.temp;
+        pywebview.api.get_now_time().then(function(now_time) {
+            editLeavingTimeInput.value = now_time;
+        });
+    });
+</script>
+
 <div class="modal fade" id="addLogModal" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content" style="background: var(--root-bg)">

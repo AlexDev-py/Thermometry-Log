@@ -73,7 +73,6 @@ body {
 
 thead, tbody tr {
     color: var(--root-fg);
-    display: table;
     width: 100%;
     table-layout: fixed;
 }

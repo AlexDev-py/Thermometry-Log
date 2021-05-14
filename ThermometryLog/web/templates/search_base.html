@@ -82,6 +82,10 @@
                             <label for="tempInput" class="form-label">Температура</label>
                             <input type="number" class="form-control" id="tempInput" step="0.1" max="40" min="32" required>
                         </div>
+                        <div class="mb-3">
+                            <label for="leavingTimeInput" class="form-label">Время ухода</label>
+                            <input type="time" step="60" value="00:00" class="form-control" id="leavingTimeInput" required>
+                        </div>
                     </div>
                     <div class="modal-footer">
                         <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Отмена</button>
@@ -90,7 +94,8 @@
                             document.getElementById('editLogModalBtn').onclick = function() {
                                 let nameInput = document.getElementById('nameInput');
                                 let tempInput = document.getElementById('tempInput');
-                                pywebview.api.edit_log(this.dataset.logId, nameInput.value, tempInput.value)
+                                let leavingTimeInput = document.getElementById('leavingTimeInput');
+                                pywebview.api.edit_log(this.dataset.logId, nameInput.value, tempInput.value, leavingTimeInput.value)
                             };
                         </script>
                     </div>
@@ -106,6 +111,13 @@
         let targetButton = event.relatedTarget;
         editLogModalBtn.dataset.logId = targetButton.dataset.logId;
         nameInput.value = targetButton.dataset.name;
+        if (targetButton.dataset.leavingTime != '0') {
+            leavingTimeInput.value = targetButton.dataset.leavingTime;
+        } else {
+            pywebview.api.get_now_time().then(function(now_time) {
+                leavingTimeInput.value = now_time;
+            });
+        };
         if (targetButton.dataset.temp > 0) {
             tempInput.value = targetButton.dataset.temp;
         } else {
