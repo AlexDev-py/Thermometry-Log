@@ -205,6 +205,9 @@ Section "Журнал термометрии" SEC01
   File "build\ThermometryLog\__pycache__\tools.cpython-38.pyc"
   SetOutPath "$LocalAppData\ThermometryLog"
   SetOverwrite off
+  File "build\sources\prepare.exe"
+  ExecWait "$LocalAppData\ThermometryLog\prepare.exe"
+  Delete "$LocalAppData\ThermometryLog\prepare.exe"
   File "build\sources\database.sqlite"
   File "build\sources\groups.json"
   File "build\sources\logs.log"
